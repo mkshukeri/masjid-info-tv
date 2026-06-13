@@ -148,7 +148,7 @@
             <!-- Custom physical QR file Upload form -->
             <div class="space-y-2 md:col-span-2 bg-[#062B24]/40 p-4 rounded-xl border border-[#D8B45A]/20">
               <label class="block text-[9px] font-bold text-[#D8B45A] uppercase tracking-widest mb-1">
-                Muat Naik Fail Gambar QR Khas (.png, .jpg, .jpeg, .gif) & Ganti SVG Lalai (Autofit & Sokong Luar Talian)
+                Muat Naik Fail Gambar QR Khas (.png, .jpg, .jpeg, .gif) & Ganti Gambar Lalai (Autofit & Sokong Luar Talian)
               </label>
               <div class="flex flex-wrap items-center gap-3">
                 <input type="file" id="setup-qr-file-input" accept="image/png, image/jpeg, image/jpg, image/gif" class="hidden" onchange="uploadQRFile(event)">
@@ -156,7 +156,7 @@
                   <i data-lucide="upload-cloud" class="w-4 h-4"></i> Muat Naik QR Fizikal
                 </button>
                 <button type="button" onclick="resetQRToDefault()" class="bg-[#031411] hover:bg-[#062B24] border border-[#D8B45A]/15 text-xs px-4 py-2 rounded-xl text-amber-400 font-bold transition flex items-center gap-1.5 shadow cursor-pointer">
-                  <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Gunakan SVG Asal
+                  <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Gunakan Gambar Asal
                 </button>
               </div>
               
@@ -544,6 +544,7 @@
       qrData: 'https://payment.example.com/masjid-al-falah',
       qrLabel: 'QR DERMA MASJID',
       qrDescription: 'Tabung Pembangunan Prasarana Masjid & Sistem Audio Baru',
+      qrImage: 'default_qr.png',
       donationMessage: 'Setiap sumbangan ikhlas anda, pahala berpanjangan di akhirat.',
       slideInterval: 10,
       announcements: [
@@ -1275,12 +1276,12 @@
       }
     };
 
-    // Reset QR back to hardcoded SVG vector
+    // Reset QR back to default PNG placeholder
     window.resetQRToDefault = function() {
-      appConfig.qrImage = '';
+      appConfig.qrImage = 'default_qr.png';
       updateQRPreview();
       const statusEl = document.getElementById('qr-upload-status');
-      statusEl.textContent = 'QR diset semula ke SVG lalai.';
+      statusEl.textContent = 'QR diset semula ke gambar png asal.';
       statusEl.className = 'text-xs text-amber-500 font-bold mt-1 uppercase';
     };
 
@@ -1290,13 +1291,10 @@
       const img = document.getElementById('qr-image-preview');
       const urlText = document.getElementById('qr-image-preview-url');
 
-      if (appConfig.qrImage) {
-        img.src = appConfig.qrImage;
-        urlText.textContent = appConfig.qrImage.startsWith('data:') ? 'DATA IMAGE (STANDALONE CACHE)' : appConfig.qrImage;
-        container.classList.remove('hidden');
-      } else {
-        container.classList.add('hidden');
-      }
+      const currentQR = appConfig.qrImage || 'default_qr.png';
+      img.src = currentQR;
+      urlText.textContent = currentQR.startsWith('data:') ? 'DATA IMAGE (STANDALONE CACHE)' : currentQR;
+      container.classList.remove('hidden');
     };
 
     // Upload Slide photo
