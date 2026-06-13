@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Helvetica Neue", Arial, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: "Georgia", "Times New Roman", serif;
+}
+
+body {
+  background-color: #062B24;
+  color: #F8F4E8;
+  font-family: var(--font-sans);
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: inline-block;
+  padding-left: 10%;
+  animation: marquee 25s linear infinite;
+}
+
+@keyframes beat {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+.animate-beat {
+  animation: beat 2.5s infinite ease-in-out;
+}
+
+/* Custom hides for scrollbars inside the configurations dashboard */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #062B24;
+}
+::-webkit-scrollbar-thumb {
+  background: #D8B45A;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #F2C94C;
+}
+

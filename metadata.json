@@ -1,0 +1,6 @@
+{
+  "name": "Masjid Screen",
+  "description": "An elegant, high-fidelity responsive smart TV screen display for mosques",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
