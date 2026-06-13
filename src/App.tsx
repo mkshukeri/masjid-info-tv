@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Settings, Info } from 'lucide-react';
 import { AppConfig } from './types';
 import { DEFAULT_SLIDES } from './utils/slidesData';
-import { getBasePrayerTimes, getNextPrayerInfo } from './utils/prayerCalc';
+import { getBasePrayerTimes, getNextPrayerInfo, parsePrayerTimesResponse } from './utils/prayerCalc';
 
 // Components
 import InfoDakwah from './components/InfoDakwah';
@@ -15,6 +15,7 @@ import SettingsModal from './components/SettingsModal';
 const DEFAULT_CONFIG: AppConfig = {
   masjidName: 'MASJID CONTOH AL-FALAH',
   zoneCode: 'WLY01 - KUALA LUMPUR / PUTRAJAYA',
+  prayerApiUrl: 'https://api.e-solat.gov.my/index.php?r=esolat/getmain&zone=WLY01&period=today',
   qrData: 'https://payment.example.com/masjid-al-falah',
   donationMessage: 'Setiap sumbangan ikhlas anda, pahala berpanjangan di akhirat.',
   slideInterval: 10, // 10 seconds default
@@ -58,6 +59,61 @@ export default function App() {
   // Settings modal visibility
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
+  // Parsed API raw times state
+  const [apiTimes, setApiTimes] = useState<Record<string, string> | null>(null);
+
+  // Let local config.json override/initialise state on mount
+  useEffect(() => {
+    fetch('/config.json')
+      .then((res) => {
+        if (!res.ok) throw new Error('Response error');
+        return res.json();
+      })
+      .then((data) => {
+        console.log('App successfully mounted and configured from /config.json:', data);
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (stored) {
+          // If the user has localStorage entries, merge them but prioritize file defaults for un-edited values
+          setConfig({ ...DEFAULT_CONFIG, ...data, ...JSON.parse(stored) });
+        } else {
+          setConfig({ ...DEFAULT_CONFIG, ...data });
+        }
+      })
+      .catch((err) => {
+        console.warn('Failed to retrieve /config.json static file, executing fallback sequence.', err);
+      });
+  }, []);
+
+  // Fetch API times whenever the config's prayerApiUrl modifies
+  useEffect(() => {
+    if (!config.prayerApiUrl) {
+      setApiTimes(null);
+      return;
+    }
+
+    const fetchPrayerTimes = () => {
+      fetch(config.prayerApiUrl!)
+        .then((res) => {
+          if (!res.ok) throw new Error('Prayer times endpoint status error');
+          return res.json();
+        })
+        .then((data) => {
+          const parsed = parsePrayerTimesResponse(data);
+          if (parsed) {
+            setApiTimes(parsed);
+          }
+        })
+        .catch((err) => {
+          console.warn('Could not retrieve API prayer times. Operating with robust astronomical fallback.', err);
+        });
+    };
+
+    fetchPrayerTimes();
+    // Re-poll every 15 minutes to guarantee accuracy
+    const timer = setInterval(fetchPrayerTimes, 15 * 60 * 1000);
+    return () => clearInterval(timer);
+  }, [config.prayerApiUrl]);
+
   // Update clock every second
   useEffect(() => {
     const clockTimer = setInterval(() => {
@@ -75,8 +131,8 @@ export default function App() {
     return () => clearInterval(slideTimer);
   }, [config.slideInterval]);
 
-  // Calculate dynamic prayer schedule
-  const currentPrayers = getBasePrayerTimes(currentTime, config);
+  // Calculate dynamic prayer schedule using local computed or fetched API structure
+  const currentPrayers = getBasePrayerTimes(currentTime, config, apiTimes);
   
   // Find current active / next prayer highlighting
   const { nextPrayer, countdownStr } = getNextPrayerInfo(currentTime, currentPrayers);

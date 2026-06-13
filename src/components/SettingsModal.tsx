@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Save, RefreshCw, Plus, Trash2, Sliders, Info, Clock } from 'lucide-react';
 import { AppConfig } from '../types';
 
@@ -19,6 +19,7 @@ export default function SettingsModal({
 }: SettingsModalProps) {
   const [masjidName, setMasjidName] = useState(config.masjidName);
   const [zoneCode, setZoneCode] = useState(config.zoneCode);
+  const [prayerApiUrl, setPrayerApiUrl] = useState(config.prayerApiUrl || '');
   const [qrData, setQrData] = useState(config.qrData);
   const [donationMessage, setDonationMessage] = useState(config.donationMessage);
   const [slideInterval, setSlideInterval] = useState(config.slideInterval);
@@ -34,6 +35,25 @@ export default function SettingsModal({
   const [asarOffset, setAsarOffset] = useState(config.asarOffset);
   const [maghribOffset, setMaghribOffset] = useState(config.maghribOffset);
   const [isyakOffset, setIsyakOffset] = useState(config.isyakOffset);
+
+  // Sync state with config prop when opened or when config changes
+  useEffect(() => {
+    if (isOpen) {
+      setMasjidName(config.masjidName || '');
+      setZoneCode(config.zoneCode || '');
+      setPrayerApiUrl(config.prayerApiUrl || '');
+      setQrData(config.qrData || '');
+      setDonationMessage(config.donationMessage || '');
+      setSlideInterval(config.slideInterval || 10);
+      setAnnouncements([...(config.announcements || [])]);
+      setSubuhOffset(config.subuhOffset || 0);
+      setSyurukOffset(config.syurukOffset || 0);
+      setZohorOffset(config.zohorOffset || 0);
+      setAsarOffset(config.asarOffset || 0);
+      setMaghribOffset(config.maghribOffset || 0);
+      setIsyakOffset(config.isyakOffset || 0);
+    }
+  }, [isOpen, config]);
 
   if (!isOpen) return null;
 
@@ -52,6 +72,7 @@ export default function SettingsModal({
     onSave({
       masjidName,
       zoneCode,
+      prayerApiUrl,
       qrData,
       donationMessage,
       slideInterval: Number(slideInterval) || 8,
@@ -122,6 +143,19 @@ export default function SettingsModal({
                   onChange={(e) => setZoneCode(e.target.value)}
                   className="w-full bg-[#062B24] border border-[rgba(216,180,90,0.35)] rounded-lg px-3 py-2 text-[#F8F4E8] focus:outline-none focus:border-[#D8B45A] text-sm"
                   placeholder="E.g. WLY01 - Kuala Lumpur"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-xs font-semibold text-[#B8C7BE] uppercase tracking-wide mb-1">
+                  Pautan API Waktu Solat (JAKIM / E-Solat)
+                </label>
+                <input
+                  type="text"
+                  value={prayerApiUrl}
+                  onChange={(e) => setPrayerApiUrl(e.target.value)}
+                  className="w-full bg-[#062B24] border border-[rgba(216,180,90,0.35)] rounded-lg px-3 py-2 text-[#F8F4E8] focus:outline-none focus:border-[#D8B45A] text-sm font-mono"
+                  placeholder="E.g. https://api.e-solat.gov.my/index.php?r=esolat/getmain&zone=WLY01&period=today"
                 />
               </div>
 

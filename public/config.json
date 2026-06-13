@@ -1,0 +1,21 @@
+{
+  "masjidName": "MASJID CONTOH AL-FALAH",
+  "zoneCode": "WLY01 - KUALA LUMPUR / PUTRAJAYA",
+  "prayerApiUrl": "https://api.mufti.gov.my/solat/WLY01",
+  "qrData": "https://payment.example.com/masjid-al-falah",
+  "donationMessage": "Tabung Pembangunan Prasarana Masjid & Sistem Audio Baharu.",
+  "slideInterval": 10,
+  "announcements": [
+    "Kuliah Maghrib malam ini selepas solat Maghrib menerangkan Kitab Adab Mualaf.",
+    "Sila letakkan telefon bimbit dalam mod senyap sebelum mula bersolat demi menjaga kekhusyukan.",
+    "Tabung pembangunan masjid dibuka bagi membiayai naik taraf dewan dan dewan utama.",
+    "Jom imarahkan masjid dengan menghadirkan diri ke solat berjemaah setiap waktu.",
+    "Terima kasih atas segala sumbangan ikhlas anda. Semoga Allah melipatgandakan ganjaran."
+  ],
+  "subuhOffset": 0,
+  "syurukOffset": 0,
+  "zohorOffset": 0,
+  "asarOffset": 0,
+  "maghribOffset": 0,
+  "isyakOffset": 0
+}

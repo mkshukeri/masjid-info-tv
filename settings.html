@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="ms" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kawalan Sistem TV Masjid - Standalone Setup</title>
+  
+  <!-- Tailwind CSS Play CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #031411;
+      color: #F8F4E8;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #062B24;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #D8B45A;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #F2C94C;
+    }
+
+    .bg-pattern {
+      background-image: url('https://www.transparenttextures.com/patterns/arabesque-thin.png');
+    }
+  </style>
+</head>
+<body class="h-full w-full select-none overflow-y-auto px-4 py-8 md:p-8 custom-scrollbar">
+
+  <div class="max-w-6xl mx-auto space-y-8 relative">
+    <div class="absolute inset-0 bg-pattern opacity-[0.01] pointer-events-none"></div>
+
+    <!-- Header Panel -->
+    <header id="admin-header" class="bg-[#0B3D33] border-2 border-[#D8B45A]/60 p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-xl relative overflow-hidden">
+      <div class="absolute inset-0 bg-pattern opacity-[0.03] pointer-events-none"></div>
+      
+      <div class="flex items-center gap-4 z-10">
+        <div class="bg-[#062B24] border-2 border-[#D8B45A] p-3 rounded-2xl text-[#D8B45A] shadow-inner">
+          <i data-lucide="sliders" class="w-8 h-8"></i>
+        </div>
+        <div>
+          <h1 class="text-xl md:text-2xl font-black tracking-widest text-[#F8F4E8] uppercase flex items-center gap-2">
+            KONFIGURASI TV MASJID
+          </h1>
+          <p class="text-[#B8C7BE] text-xs font-semibold tracking-wider mt-0.5 uppercase">
+            Halaman Standalone &bull; Bersambung menerusi Local Storage
+          </p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap gap-2.5 z-10">
+        <a href="standalone.html" target="_blank" class="bg-[#D8B45A] hover:bg-[#F2C94C] text-[#062B24] px-4 py-2.5 rounded-xl text-xs font-black tracking-widest transition flex items-center gap-2 shadow-lg">
+          <i data-lucide="external-link" class="w-4 h-4"></i>
+          <span>BUKA SKRIN UTAMA</span>
+        </a>
+        <button id="btn-export" class="bg-[#0F4A3D] hover:bg-[#062B24] text-[#F8F4E8] border border-[#D8B45A]/35 px-4 py-2.5 rounded-xl text-xs font-black tracking-widest transition flex items-center gap-2 shadow">
+          <i data-lucide="download" class="w-4 h-4"></i>
+          <span>EXPORT SETUP</span>
+        </button>
+        <button id="btn-import-trigger" onclick="document.getElementById('input-file-import').click()" class="bg-[#0F4A3D] hover:bg-[#062B24] text-[#F8F4E8] border border-[#D8B45A]/35 px-4 py-2.5 rounded-xl text-xs font-black tracking-widest transition flex items-center gap-2 shadow">
+          <i data-lucide="upload" class="w-4 h-4"></i>
+          <span>IMPORT SETUP</span>
+        </button>
+        <input type="file" id="input-file-import" class="hidden" accept=".json" onchange="importSetup(event)">
+      </div>
+    </header>
+
+    <!-- Sync status bar -->
+    <div class="bg-[#062B24] border border-[#D8B45A]/20 py-2.5 px-4 rounded-xl text-xs flex justify-between items-center gap-2">
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+        <span id="sync-status" class="text-emerald-400 font-bold tracking-wide">Status: Sedia Berintegrasi</span>
+      </div>
+      <div class="text-[#B8C7BE] font-mono text-[10px] hidden md:block">
+        Key: <span class="text-[#D8B45A]">standalone_masjid_screen_v1</span>
+      </div>
+    </div>
+
+    <!-- MAIN GRID CONTAINER -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- COLUMN 1 & TWO (Left Large Panel) -->
+      <div class="lg:col-span-2 space-y-6">
+
+        <!-- Form Section 1: Identities & Donation -->
+        <section id="section-identities" class="bg-[#0B3D33] border-2 border-[#D8B45A]/30 p-6 rounded-2xl shadow-lg space-y-5">
+          <h3 class="text-sm font-black tracking-[0.2em] text-[#D8B45A] uppercase border-b border-[#D8B45A]/25 pb-2 flex items-center gap-2">
+            <i data-lucide="info" class="w-4.5 h-4.5"></i>
+            <span>IDENTITI & DERMA MASJID</span>
+          </h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="space-y-1">
+              <label class="block text-[10px] font-bold text-[#B8C7BE] uppercase tracking-wider">Nama Masjid</label>
+              <input type="text" id="setup-masjid-name" class="w-full bg-[#062B24] border border-[#D8B45A]/35 rounded-xl px-4 py-3 text-[#F8F4E8] focus:outline-none focus:border-[#D8B45A] text-sm">
+            </div>
+
+            <div class="space-y-1">
+              <label class="block text-[10px] font-bold text-[#B8C7BE] uppercase tracking-wider">Zon Paparan Melayu</label>
+              <input type="text" id="setup-zone-code" class="w-full bg-[#062B24] border border-[#D8B45A]/35 rounded-xl px-4 py-3 text-[#F8F4E8] focus:outline-none focus:border-[#D8B45A] text-sm" placeholder="Contoh: WLY01 - KUALA LUMPUR / PUTRAJAYA">
+            </div>
+
+            <div class="space-y-1 md:col-span-2">
+              <label class="block text-[10px] font-bold text-[#B8C7BE] uppercase tracking-wider">Pautan Link QR Derma</label>
+              <input type="text" id="setup-qr-data" class="w-full bg-[#062B24] border border-[#D8B45A]/35 rounded-xl px-4 py-3 text-[#F8F4E8] focus:outline-none focus:border-[#D8B45A] text-sm font-mono">
+            </div>
+
+            <div class="space-y-1">
+              <label class="block text-[10px] font-bold text-[#B8C7BE] uppercase tracking-wider">Label QR Derma Masjid</label>
+              <input type="text" id="setup-qr-label" class="w-full bg-[#062B24] border border-[#D8B45A]/35 rounded-xl px-4 py-3 text-[#F8F4E8] focus:outline-none focus:border-[#D8B45A] text-sm" placeholder="E.g. QR DERMA MASJID">
+            </div>
+
+            <div class="space-y-1">
+              <label class="block text-[10px] font-bold text-[#B8C7BE] uppercase tracking-wider font-sans">Mesej Keterangan QR</label>
+              <input type="text" id="setup-qr-description" class="w-full bg-[#062B24] border border-[#D8B45A]/35 rounded-xl px-4 py-3 text-[#F8F4E8] focus:outline-none focus:border-[#D8B45A] text-sm font-sans" placeholder="E.g. Tabung Pembangunan Prasarana Masjid & Sistem Audio Baru">
+            </div>
+
+            <div class="space-y-1 md:col-span-2">
+              <label class="block text-[10px] font-bold text-[#B8C7BE] uppercase tracking-wider">Mesej Banner / Footer Ticker Derma</label>
+              <input type="text" id="setup-donation-message" class="w-full bg-[#062B24] border border-[#D8B45A]/35 rounded-xl px-4 py-3 text-[#F8F4E8] focus:outline-none focus:border-[#D8B45A] text-sm">
+            </div>
+          </div>
+        </section>
+
+        <!-- Form Section 2: Scrolling Announcements -->
+        <section id="section-announcements" class="bg-[#0B3D33] border-2 border-[#D8B45A]/30 p-6 rounded-2xl shadow-lg space-y-4">
+          <div class="border-b border-[#D8B45A]/25 pb-2 flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
+            <h3 class="text-sm font-black tracking-[0.2em] text-[#D8B45A] uppercase flex items-center gap-2">
+              <i data-lucide="megaphone" class="w-4.5 h-4.5"></i>
+              <span>PENGUMUMAN BERJALAN JEMAAH</span>
+            </h3>
+            
+            <!-- Real-time JS Search input -->
+            <div class="relative w-full md:w-56 shrink-0 mt-2 md:mt-0">
+              <input type="text" id="search-announcements" oninput="searchAnnouncements()" class="w-full bg-[#062B24] border border-[#D8B45A]/25 rounded-lg pl-8 pr-3 py-1.5 text-xs text-[#F8F4E8] focus:outline-none focus:border-[#D8B45A]" placeholder="Cari dalam senarai...">
+              <i data-lucide="search" class="w-3.5 h-3.5 text-[#B8C7BE] absolute left-2.5 top-1/2 -translate-y-1/2"></i>
+            </div>
+          </div>
+
+          <!-- Add new component -->
+          <div class="flex gap-2.5 bg-[#031411] p-3 rounded-xl border border-[#D8B45A]/15">
+            <input type="text" id="new-announcement-input" class="flex-1 bg-[#062B24] border border-[#D8B45A]/25 rounded-lg px-3 py-2 text-xs text-[#F8F4E8] focus:outline-none focus:border-[#D8B45A]" placeholder="Tambah teks pengumuman baharu jemaah di sini...">
+            <button type="button" onclick="addAnnouncement()" class="bg-[#D8B45A] hover:bg-[#F2C94C] text-[#062B24] font-extrabold px-5 rounded-lg text-xs tracking-widest transition flex items-center gap-1.5 shrink-0">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              <span>TAMBAH</span>
+            </button>
+          </div>
+
+          <!-- Container list -->
+          <div id="announcements-list-root" class="space-y-2 max-h-56 overflow-y-auto custom-scrollbar pr-1">
+            <!-- Dynamically searched and filled -->
+          </div>
+        </section>
+
+        <!-- Form Section 3: Slideshow Management -->
+        <section id="section-slideshow" class="bg-[#0B3D33] border-2 border-[#D8B45A]/30 p-6 rounded-2xl shadow-lg space-y-4">
+          <div class="border-b border-[#D8B45A]/25 pb-2 flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
+            <div>
+              <h3 class="text-sm font-black tracking-[0.2em] text-[#D8B45A] uppercase flex items-center gap-2">
+                <i data-lucide="play" class="w-4.5 h-4.5"></i>
+                <span>SLAID DAKWAH & HEBAHAN</span>
+              </h3>
+              <p class="text-[10px] text-[#B8C7BE] mt-0.5 uppercase tracking-wider">Boleh mematikan slaid, menambah siri hadith, atau memadam</p>
+            </div>
+            
+            <!-- Real-time JS Search input for Slides -->
+            <div class="relative w-full md:w-56 shrink-0 mt-2 md:mt-0">
+              <input type="text" id="search-slides" oninput="searchSlides()" class="w-full bg-[#062B24] border border-[#D8B45A]/25 rounded-lg pl-8 pr-3 py-1.5 text-xs text-[#F8F4E8] focus:outline-none focus:border-[#D8B45A]" placeholder="Cari dalam slaid...">
+              <i data-lucide="search" class="w-3.5 h-3.5 text-[#B8C7BE] absolute left-2.5 top-1/2 -translate-y-1/2"></i>
+            </div>
+          </div>
+
+          <div class="bg-[#062B24] p-4 rounded-xl border border-[#D8B45A]/15 flex items-center gap-4">
+            <div class="w-full max-w-xs space-y-1">
+              <label class="block text-[10px] font-bold text-[#B8C7BE] uppercase tracking-wider">Tempoh Tukar Slaid (Saat)</label>
+              <div class="flex items-center gap-3">
+                <input type="range" id="setup-slide-interval" min="3" max="60" class="w-full accent-[#D8B45A]" oninput="document.getElementById('slide-interval-val').textContent = this.value + 's'">
+                <span id="slide-interval-val" class="text-sm font-mono font-bold text-[#D8B45A] shrink-0">10s</span>
+              </div>
+            </div>
+            <div class="text-[10px] text-[#B8C7BE] italic max-w-sm hidden md:block">
+              Slaid akan mengalir bergantian mengikut tempoh saat yang anda tetapkan secara automatik.
+            </div>
+          </div>
+
+          <!-- Add new Slide Accordion/Form Card -->
+          <div class="bg-[#031411] p-4 rounded-xl border border-[#D8B45A]/20 space-y-3">
+            <h4 class="text-xs font-bold text-[#D8B45A] uppercase tracking-widest flex items-center gap-1.5">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i>
+              <span>Tambah Slaid Mutiara Dakwah Baharu</span>
+            </h4>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+              <div>
+                <label class="block text-[9px] font-bold text-[#B8C7BE] uppercase tracking-wider mb-1">Tajuk Slaid</label>
+                <input type="text" id="new-slide-title" class="w-full bg-[#062B24] border border-[#D8B45A]/25 rounded-lg px-3 py-2 text-xs text-[#F8F4E8] focus:outline-none focus:border-[#D8B45A]" placeholder="E.g. MUTIARA HADITH, ADAB">
+              </div>
+              <div>
+                <label class="block text-[9px] font-bold text-[#B8C7BE] uppercase tracking-wider mb-1">Sumber / Keterangan Khas</label>
+                <input type="text" id="new-slide-source" class="w-full bg-[#062B24] border border-[#D8B45A]/25 rounded-lg px-3 py-2 text-xs text-[#F8F4E8] focus:outline-none focus:border-[#D8B45A]" placeholder="E.g. Hadith Al-Bukhari, Surah Al-Kahf">
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-[9px] font-bold text-[#B8C7BE] uppercase tracking-wider mb-1">Teks / Mutiara Kata Dakwah</label>
+                <textarea id="new-slide-quote" rows="2" class="w-full bg-[#062B24] border border-[#D8B45A]/25 rounded-lg px-3 py-2 text-xs text-[#F8F4E8] focus:outline-none focus:border-[#D8B45A] custom-scrollbar" placeholder="Sila masukkan petikan hadith atau pengisian ibadah..."></textarea>
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-[9px] font-bold text-[#B8C7BE] uppercase tracking-wider mb-1">Pautan Gambar Latar (Url) - Biarkan Kosong untuk Slaid Teks Sahaja</label>
+                <div class="flex gap-2">
+                  <input type="text" id="new-slide-image" class="flex-1 bg-[#062B24] border border-[#D8B45A]/25 rounded-lg px-3 py-2 text-xs text-[#F8F4E8] focus:outline-none focus:border-[#D8B45A] font-mono text-xs" placeholder="https://images.unsplash.com/... atau pilih galeri di bawah">
+                  <button type="button" onclick="setPresetImage()" class="bg-[#0F4A3D] hover:bg-[#062B24] border border-[#D8B45A]/35 text-xs px-3 rounded-lg text-[#D8B45A] font-bold transition flex items-center gap-1">
+                    <i data-lucide="image" class="w-3.5 h-3.5"></i> Presets
+                  </button>
+                </div>
+                <!-- Preset Options Gallery Mini -->
+                <div id="image-preset-picker" class="hidden grid grid-cols-4 gap-2 mt-2 p-2 bg-[#062B24] rounded-lg border border-[#D8B45A]/15">
+                  <button type="button" onclick="selectPreset('https://images.unsplash.com/photo-1590075865003-e48277faa558?auto=format&fit=crop&q=80&w=600')" class="outline-none focus:border-[#D8B45A] border border-transparent rounded overflow-hidden h-10"><img src="https://images.unsplash.com/photo-1590075865003-e48277faa558?auto=format&fit=crop&q=80&w=150" class="w-full h-full object-cover"></button>
+                  <button type="button" onclick="selectPreset('https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&q=80&w=600')" class="outline-none focus:border-[#D8B45A] border border-transparent rounded overflow-hidden h-10"><img src="https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&q=80&w=150" class="w-full h-full object-cover"></button>
+                  <button type="button" onclick="selectPreset('https://images.unsplash.com/photo-1542856391-010fb87dcfed?auto=format&fit=crop&q=80&w=600')" class="outline-none focus:border-[#D8B45A] border border-transparent rounded overflow-hidden h-10"><img src="https://images.unsplash.com/photo-1542856391-010fb87dcfed?auto=format&fit=crop&q=80&w=150" class="w-full h-full object-cover"></button>
+                  <button type="button" onclick="selectPreset('https://images.unsplash.com/photo-1466442929976-97f336a657be?auto=format&fit=crop&q=80&w=600')" class="outline-none focus:border-[#D8B45A] border border-transparent rounded overflow-hidden h-10"><img src="https://images.unsplash.com/photo-1466442929976-97f336a657be?auto=format&fit=crop&q=80&w=150" class="w-full h-full object-cover"></button>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex justify-end pt-2">
+              <button type="button" onclick="addSlide()" class="bg-[#D8B45A] hover:bg-[#F2C94C] text-[#062B24] font-black text-xs tracking-widest px-5 py-2.5 rounded-xl transition flex items-center gap-1.5 shadow">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                <span>DAFTAR SLAID</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Slide preview rows list -->
+          <div id="slides-list-root" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Dynamical list cards with toggle and deletes -->
+          </div>
+        </section>
+
+      </div>
+
+      <!-- COLUMN 3 (Right Setup Panel) -->
+      <div id="right-config-column" class="space-y-6">
+
+        <!-- Form Section 4: Malaysia JAKIM API Zone Setting -->
+        <section id="section-api-waktu" class="bg-[#0B3D33] border-2 border-[#D8B45A]/30 p-6 rounded-2xl shadow-lg space-y-4">
+          <h3 class="text-sm font-black tracking-[0.2em] text-[#D8B45A] uppercase border-b border-[#D8B45A]/25 pb-2 flex items-center gap-2">
+            <i data-lucide="map-pin" class="w-4.5 h-4.5"></i>
+            <span>ZON & API SOLAT MALAYSIA</span>
+          </h3>
+
+          <div class="space-y-4">
+            <div class="space-y-1">
+              <label class="block text-[10px] font-bold text-[#B8C7BE] uppercase tracking-wider">Cari & Pilih Zon JAKIM</label>
+              <div class="relative">
+                <select id="setup-zone-selector" onchange="autoConfigureZone(this.value)" class="w-full bg-[#062B24] border border-[#D8B45A]/35 rounded-xl px-4 py-3 text-[#F8F4E8] text-xs focus:outline-none focus:border-[#D8B45A] custom-scrollbar">
+                  <!-- JS Dynamic injection -->
+                </select>
+              </div>
+              <p class="text-[9px] text-[#B8C7BE] leading-normal uppercase mt-1">Memilih zon akan mengisi Pautan API Solat di bawah secara automatik.</p>
+            </div>
+
+            <div class="space-y-1">
+              <label class="block text-[10px] font-bold text-[#B8C7BE] uppercase tracking-wider">Pautan Endpoint API (E-Solat)</label>
+              <input type="text" id="setup-prayer-api-url" class="w-full bg-[#062B24] border border-[#D8B45A]/35 rounded-xl px-4 py-3 text-[#F8F4E8] focus:outline-none focus:border-[#D8B45A] text-xs font-mono">
+              <p class="text-[9px] text-[#B8C7BE] leading-normal uppercase">Alat paparan standalone akan memproses format json daripada pelayan rasmi JAKIM Malaysia ini.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Form Section 5: Manual Prayer Offsets -->
+        <section id="section-offsets" class="bg-[#0B3D33] border-2 border-[#D8B45A]/30 p-6 rounded-2xl shadow-lg space-y-4">
+          <h3 class="text-sm font-black tracking-[0.2em] text-[#D8B45A] uppercase border-b border-[#D8B45A]/25 pb-2 flex items-center gap-2">
+            <i data-lucide="clock" class="w-4.5 h-4.5"></i>
+            <span>PELARASAN MINIT SOLAT (+/-)</span>
+          </h3>
+
+          <p class="text-[10px] text-[#B8C7BE] leading-relaxed uppercase">
+            Gunakan fungsi offset untuk meminda minit solat jika terdapat variasi beberapa minit:
+          </p>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div class="bg-[#062B24] border border-[#D8B45A]/15 p-2 rounded-xl flex items-center gap-2 justify-between">
+              <label class="text-xs text-[#B8C7BE] font-bold">SUBUH</label>
+              <input type="number" id="setup-offset-subuh" class="w-16 bg-[#031411] border border-[#D8B45A]/30 text-center rounded py-1 text-sm font-bold text-[#D8B45A]">
+            </div>
+            <div class="bg-[#062B24] border border-[#D8B45A]/15 p-2 rounded-xl flex items-center gap-2 justify-between">
+              <label class="text-xs text-[#B8C7BE] font-bold">SYURUK</label>
+              <input type="number" id="setup-offset-syuruk" class="w-16 bg-[#031411] border border-[#D8B45A]/30 text-center rounded py-1 text-sm font-bold text-[#D8B45A]">
+            </div>
+            <div class="bg-[#062B24] border border-[#D8B45A]/15 p-2 rounded-xl flex items-center gap-2 justify-between">
+              <label class="text-xs text-[#B8C7BE] font-bold">ZOHOR</label>
+              <input type="number" id="setup-offset-zohor" class="w-16 bg-[#031411] border border-[#D8B45A]/30 text-center rounded py-1 text-sm font-bold text-[#D8B45A]">
+            </div>
+            <div class="bg-[#062B24] border border-[#D8B45A]/15 p-2 rounded-xl flex items-center gap-2 justify-between">
+              <label class="text-xs text-[#B8C7BE] font-bold">ASAR</label>
+              <input type="number" id="setup-offset-asar" class="w-16 bg-[#031411] border border-[#D8B45A]/30 text-center rounded py-1 text-sm font-bold text-[#D8B45A]">
+            </div>
+            <div class="bg-[#062B24] border border-[#D8B45A]/15 p-2 rounded-xl flex items-center gap-2 justify-between">
+              <label class="text-xs text-[#B8C7BE] font-bold">MAGHRIB</label>
+              <input type="number" id="setup-offset-maghrib" class="w-16 bg-[#031411] border border-[#D8B45A]/30 text-center rounded py-1 text-sm font-bold text-[#D8B45A]">
+            </div>
+            <div class="bg-[#062B24] border border-[#D8B45A]/15 p-2 rounded-xl flex items-center gap-2 justify-between">
+              <label class="text-xs text-[#B8C7BE] font-bold">ISYAK</label>
+              <input type="number" id="setup-offset-isyak" class="w-16 bg-[#031411] border border-[#D8B45A]/30 text-center rounded py-1 text-sm font-bold text-[#D8B45A]">
+            </div>
+          </div>
+        </section>
+
+        <!-- Save Button Column Bottom sticky -->
+        <div class="bg-[#0B3D33] border-2 border-[#D8B45A] p-5 rounded-2xl shadow-xl space-y-3 relative overflow-hidden">
+          <div class="absolute inset-0 bg-pattern opacity-[0.03] pointer-events-none"></div>
+          
+          <button type="button" onclick="triggerResetToDefault()" class="w-full bg-[#031411] hover:bg-[#062B24] border border-red-500/30 hover:border-red-500 text-red-400 font-bold py-2.5 rounded-xl text-xs tracking-widest transition flex items-center justify-center gap-2">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+            <span>TETAP SEMULA ASAL</span>
+          </button>
+          
+          <button type="button" onclick="performSaveSettings()" class="w-full bg-[#D8B45A] hover:bg-[#F2C94C] text-[#062B24] font-black py-3 rounded-xl text-xs tracking-[0.2em] transition flex items-center justify-center gap-2 shadow-lg scale-100 hover:scale-102 transform duration-150">
+            <i data-lucide="save" class="w-4.5 h-4.5"></i>
+            <span>SIMPAN SEMUA PERUBAHAN</span>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Dynamic Javascript Business setup Logic -->
+  <script>
+    // System definitions
+    const COMPREHENSIVE_MALAYSIAN_ZONES = [
+      { code: "WLY01", name: "KUALA LUMPUR & PUTRAJAYA (WLY01)" },
+      { code: "WLY02", name: "LABUAN (WLY02)" },
+      { code: "SGR01", name: "SELANGOR: Gombak, Petaling, Shah Alam (SGR01)" },
+      { code: "SGR02", name: "SELANGOR: Sabak Bernam, Kuala Selangor (SGR02)" },
+      { code: "SGR03", name: "SELANGOR: Klang, Kuala Langat (SGR03)" },
+      { code: "JHR01", name: "JOHOR: Pulau Aur, Pemanggil (JHR01)" },
+      { code: "JHR02", name: "JOHOR: Johor Bahru, Kota Tinggi, Pontian (JHR02)" },
+      { code: "JHR03", name: "JOHOR: Kluang, Pontian (Sebahagian) (JHR03)" },
+      { code: "JHR04", name: "JOHOR: Batu Pahat, Muar, Tangkak, Segamat (JHR04)" },
+      { code: "PNG01", name: "PULAU PINANG (PNG01)" },
+      { code: "KDH01", name: "KEDAH: Kota Setar, Kubang Pasu, Padang Terap (KDH01)" },
+      { code: "KDH02", name: "KEDAH: Kuala Muda, Yan, Baling (KDH02)" },
+      { code: "KDH03", name: "KEDAH: Kulim, Bandar Baharu (KDH03)" },
+      { code: "KDH04", name: "KEDAH: Langkawi (KDH04)" },
+      { code: "PRK01", name: "PERAK: Tapah, Slim River, Tg Malim (PRK01)" },
+      { code: "PRK02", name: "PERAK: Ipoh, Batu Gajah, Kampar, K Kangsar (PRK02)" },
+      { code: "PRK03", name: "PERAK: Gerik, Pengkalan Hulu, Lenggong (PRK03)" },
+      { code: "PRK04", name: "PERAK: Temengor, Belum (PRK04)" },
+      { code: "PRK05", name: "PERAK: Bagan Serai, Parit Buntar, Taiping (PRK05)" },
+      { code: "PRK06", name: "PERAK: Manjung, Lumut (PRK06)" },
+      { code: "PRK07", name: "PERAK: Teluk Intan, Bagan Datuk (PRK07)" },
+      { code: "PLS01", name: "PERLIS (PLS01)" },
+      { code: "MLK01", name: "MELAKA (MLK01)" },
+      { code: "NSN01", name: "NEGERI SEMBILAN: Jempol, Tampin (NSN01)" },
+      { code: "NSN02", name: "NEGERI SEMBILAN: Port Dickson, Seremban (NSN02)" },
+      { code: "NSN03", name: "NEGERI SEMBILAN: Jelebu (NSN03)" },
+      { code: "PHG01", name: "PAHANG: Rompin, Pulau Tioman (PHG01)" },
+      { code: "PHG02", name: "PAHANG: Pekan, Kuantan (PHG02)" },
+      { code: "PHG03", name: "PAHANG: Jerantut, Temerloh, Maran (PHG03)" },
+      { code: "PHG04", name: "PAHANG: Lipis, Raub (PHG04)" },
+      { code: "PHG05", name: "PAHANG: Bentong (PHG05)" },
+      { code: "PHG06", name: "PAHANG: Cameron Highlands (PHG06)" },
+      { code: "TRG01", name: "TERENGGANU: Kuala Terengganu, Marang (TRG01)" },
+      { code: "TRG02", name: "TERENGGANU: Besut, Setiu (TRG02)" },
+      { code: "TRG03", name: "TERENGGANU: Hulu Terengganu (TRG03)" },
+      { code: "TRG04", name: "TERENGGANU: Kemaman, Dungun (TRG04)" },
+      { code: "KTN01", name: "KELANTAN: Kota Bharu, Bachok, Pasir Puteh (KTN01)" },
+      { code: "KTN02", name: "KELANTAN: Jeli, Gua Musang (KTN02)" },
+      { code: "SBH01", name: "SABAH: Sandakan, Beluran, Tongod (SBH01)" },
+      { code: "SBH02", name: "SABAH: Tawau, Lahad Datu, Semporna (SBH02)" },
+      { code: "SBH03", name: "SABAH: Kudat, Kota Marudu (SBH03)" },
+      { code: "SBH04", name: "SABAH: Kota Kinabalu, Penampang, Tuaran (SBH04)" },
+      { code: "SWK01", name: "SARAWAK: Limbang, Lawas (SWK01)" },
+      { code: "SWK02", name: "SARAWAK: Miri, Sibuti, Marudi (SWK02)" },
+      { code: "SWK03", name: "SARAWAK: Bintulu (SWK03)" },
+      { code: "SWK04", name: "SARAWAK: Sibu, Mukah, Selangau (SWK04)" },
+      { code: "SWK05", name: "SARAWAK: Sarikei, Binatang, Julau (SWK05)" },
+      { code: "SWK06", name: "SARAWAK: Sri Aman, Engkilili, Lubok Antu (SWK06)" },
+      { code: "SWK07", name: "SARAWAK: Kuching, Bau, Lundu (SWK07)" },
+      { code: "SWK08", name: "SARAWAK: Samarahan, Serian (SWK08)" },
+      { code: "SWK09", name: "SARAWAK: Kapit, Belaga (SWK09)" }
+    ];
+
+    const DEF_SLIDES = [
+      {
+        id: 'slide-1',
+        title: 'MUTIARA HADITH',
+        quote: '"Sesungguhnya yang memakmurkan masjid-masjid Allah hanyalah orang-orang yang beriman kepada Allah dan hari akhirat, mendirikan solat, menunaikan zakat dan tidak takut melainkan kepada Allah..."',
+        source: 'Surah At-Taubah: 18',
+        type: 'text'
+      },
+      {
+        id: 'slide-2',
+        title: 'KULIAH MAGHRIB KHAS',
+        quote: 'Kuliah Tafsir Al-Quran & Adab Ahli Kariah bersama Ustaz Dr. Fauzi Abu Bakar. Dijemput semua muslimin & muslimat hadir bersama keluarga bagi mengimarahkan majlis ilmu.',
+        source: 'Setiap Jumaat (Siri Ke-4)',
+        imageUrl: 'https://images.unsplash.com/photo-1590075865003-e48277faa558?auto=format&fit=crop&q=80&w=1200',
+        type: 'media'
+      },
+      {
+        id: 'slide-3',
+        title: 'TABUNG KEMAKMURAN MASJID',
+        quote: 'Salurkan modal akhirat anda untuk pembangunan prasarana masjid dan pembelian kelengkapan sistem audio baharu demi keselesaan para jemaah.',
+        source: 'Pembangunan Al-Falah',
+        imageUrl: 'https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&q=80&w=1200',
+        type: 'media'
+      },
+      {
+        id: 'slide-4',
+        title: 'MUTIARA HADITH',
+        quote: '"Sesiapa yang membina masjid kerana Allah (walau sekecil mana pun), Allah akan membina baginya sebuah rumah di dalam mahligai Syurga."',
+        source: 'Hadith Riwayat Al-Bukhari & Muslim',
+        imageUrl: 'https://images.unsplash.com/photo-1542856391-010fb87dcfed?auto=format&fit=crop&q=80&w=1200',
+        type: 'media'
+      },
+      {
+        id: 'slide-5',
+        title: 'ADAB DI DALAM MASJID',
+        quote: 'Peliharalah adab ketika berada di rumah Allah. Pastikan telefon bimbit diletakkan dalam mod senyap (silent) sebelum solat bermula demi mengekalkan kekhusyukan ahli jemaah.',
+        source: 'Tuntutan Syarak',
+        type: 'text'
+      }
+    ];
+
+    const DEFAULT_CONFIG = {
+      masjidName: 'MASJID CONTOH AL-FALAH',
+      zoneCode: 'WLY01 - KUALA LUMPUR / PUTRAJAYA',
+      qrData: 'https://payment.example.com/masjid-al-falah',
+      qrLabel: 'QR DERMA MASJID',
+      qrDescription: 'Tabung Pembangunan Prasarana Masjid & Sistem Audio Baru',
+      donationMessage: 'Setiap sumbangan ikhlas anda, pahala berpanjangan di akhirat.',
+      slideInterval: 10,
+      announcements: [
+        'Kuliah Maghrib malam ini selepas solat Maghrib menerangkan Kitab Adab Mualaf.',
+        'Sila letakkan telefon bimbit dalam mod senyap sebelum mula bersolat demi menjaga kekhusyukan.',
+        'Tabung pembangunan masjid dibuka bagi membiayai naik taraf dewan dan dewan utama.',
+        'Jom imarahkan masjid dengan menghadirkan diri ke solat berjemaah setiap waktu.',
+        'Terima kasih atas segala sumbangan ikhlas anda. Semoga Allah melipatgandakan ganjaran.'
+      ],
+      slides: [...DEF_SLIDES],
+      subuhOffset: 0,
+      syurukOffset: 0,
+      zohorOffset: 0,
+      asarOffset: 0,
+      maghribOffset: 0,
+      isyakOffset: 0,
+      prayerApiUrl: 'https://api.e-solat.gov.my/index.php?r=esolat/getmain&zone=WLY01&period=today'
+    };
+
+    const LOCAL_STORAGE_KEY = 'standalone_masjid_screen_v1';
+    let appConfig = { ...DEFAULT_CONFIG };
+
+    // Search input state values
+    let searchAnnouncementsQuery = '';
+    let searchSlidesQuery = '';
+
+    // Initialize layout and parameters
+    function init() {
+      loadConfig();
+      renderZoneSelector();
+      populateForm();
+      renderAnnouncements();
+      renderSlides();
+      lucide.createIcons();
+    }
+
+    // Load setup data
+    function loadConfig() {
+      try {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          appConfig = { ...DEFAULT_CONFIG, ...parsed };
+          // fallback slide list if not defined in older localStorage entries
+          if (!appConfig.slides || appConfig.slides.length === 0) {
+            appConfig.slides = [...DEF_SLIDES];
+          }
+        } else {
+          appConfig = { ...DEFAULT_CONFIG };
+        }
+      } catch (e) {
+        console.warn('Could not read from localstorage, setting default configuration template.', e);
+        appConfig = { ...DEFAULT_CONFIG };
+      }
+    }
+
+    // Render drop-down Selector for JAKIM zones
+    function renderZoneSelector() {
+      const selectElem = document.getElementById('setup-zone-selector');
+      let selectHtml = `<option value="">-- PILIH KAWASAN / DAERAH --</option>`;
+      COMPREHENSIVE_MALAYSIAN_ZONES.forEach(z => {
+        selectHtml += `<option value="${z.code}">${z.name}</option>`;
+      });
+      selectElem.innerHTML = selectHtml;
+    }
+
+    // Put current properties out in form input values
+    function populateForm() {
+      document.getElementById('setup-masjid-name').value = appConfig.masjidName;
+      document.getElementById('setup-zone-code').value = appConfig.zoneCode;
+      document.getElementById('setup-qr-data').value = appConfig.qrData;
+      document.getElementById('setup-qr-label').value = appConfig.qrLabel || 'QR DERMA MASJID';
+      document.getElementById('setup-qr-description').value = appConfig.qrDescription || 'Tabung Pembangunan Prasarana Masjid & Sistem Audio Baru';
+      document.getElementById('setup-donation-message').value = appConfig.donationMessage;
+      document.getElementById('setup-slide-interval').value = appConfig.slideInterval || 10;
+      document.getElementById('slide-interval-val').textContent = (appConfig.slideInterval || 10) + 's';
+      document.getElementById('setup-prayer-api-url').value = appConfig.prayerApiUrl || '';
+
+      // Offsets
+      document.getElementById('setup-offset-subuh').value = appConfig.subuhOffset || 0;
+      document.getElementById('setup-offset-syuruk').value = appConfig.syurukOffset || 0;
+      document.getElementById('setup-offset-zohor').value = appConfig.zohorOffset || 0;
+      document.getElementById('setup-offset-asar').value = appConfig.asarOffset || 0;
+      document.getElementById('setup-offset-maghrib').value = appConfig.maghribOffset || 0;
+      document.getElementById('setup-offset-isyak').value = appConfig.isyakOffset || 0;
+
+      // Select dropdown matching state
+      const matchingCode = COMPREHENSIVE_MALAYSIAN_ZONES.find(v => appConfig.zoneCode.includes(v.code));
+      if (matchingCode) {
+        document.getElementById('setup-zone-selector').value = matchingCode.code;
+      }
+    }
+
+    // Triggered when user selects a preset zone from the drop-down selector
+    window.autoConfigureZone = function(zoneCode) {
+      if (!zoneCode) return;
+      const zoneObj = COMPREHENSIVE_MALAYSIAN_ZONES.find(z => z.code === zoneCode);
+      if (zoneObj) {
+        document.getElementById('setup-zone-code').value = zoneObj.name;
+        document.getElementById('setup-prayer-api-url').value = `https://api.e-solat.gov.my/index.php?r=esolat/getmain&zone=${zoneCode}&period=today`;
+      }
+    };
+
+    // Preset Image selection trigger inside Slide Creator Form
+    window.setPresetImage = function() {
+      const picker = document.getElementById('image-preset-picker');
+      picker.classList.toggle('hidden');
+    };
+
+    window.selectPreset = function(url) {
+      document.getElementById('new-slide-image').value = url;
+      document.getElementById('image-preset-picker').classList.add('hidden');
+    };
+
+    // JAVASCRIPT REAL-TIME SEARCH FOR ANNOUNCEMENTS & TICKERS
+    window.searchAnnouncements = function() {
+      searchAnnouncementsQuery = document.getElementById('search-announcements').value.trim().toLowerCase();
+      renderAnnouncements();
+    };
+
+    // Renders the ticker text item tables or entries
+    function renderAnnouncements() {
+      const listRoot = document.getElementById('announcements-list-root');
+      listRoot.innerHTML = '';
+
+      // Filter array in-memory using standalone custom client side javascript
+      const filtered = appConfig.announcements.filter(text => {
+        if (!searchAnnouncementsQuery) return true;
+        return text.toLowerCase().includes(searchAnnouncementsQuery);
+      });
+
+      if (filtered.length === 0) {
+        listRoot.innerHTML = `
+          <div class="text-center py-6 text-xs text-[#B8C7BE]/60 italic font-mono uppercase bg-[#062B24] rounded-xl border border-[#D8B45A]/10">
+            Tiada pengumuman sepadan dijumpai. Sila tambah baharu!
+          </div>
+        `;
+        return;
+      }
+
+      // Generate HTML list
+      filtered.forEach((text, index) => {
+        const itemIdx = appConfig.announcements.indexOf(text); // Grab correct index in parent array
+        const row = document.createElement('div');
+        row.className = "flex justify-between items-center bg-[#062B24] hover:bg-[#031411] p-3 rounded-xl border border-[#D8B45A]/15 gap-4 transition duration-150";
+        row.innerHTML = `
+          <div class="flex items-start gap-2.5 min-w-0">
+            <span class="bg-[#D8B45A]/10 text-[#D8B45A] text-[10px] font-mono px-2 py-0.5 rounded shrink-0">#${itemIdx + 1}</span>
+            <p class="text-xs text-[#F8F4E8] leading-relaxed break-words font-medium">${text}</p>
+          </div>
+          <button type="button" onclick="deleteAnnouncement(${itemIdx})" class="text-red-400 hover:text-red-300 p-1.5 hover:bg-red-500/15 rounded-lg transition" title="Padam Pengumuman">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
+        `;
+        listRoot.appendChild(row);
+      });
+      lucide.createIcons();
+    }
+
+    // Add list element
+    window.addAnnouncement = function() {
+      const input = document.getElementById('new-announcement-input');
+      const val = input.value.trim();
+      if (!val) {
+        alert('Sila masukkan kandungan teks untuk hebahan terlebih dahulu.');
+        return;
+      }
+      appConfig.announcements.push(val);
+      input.value = '';
+      renderAnnouncements();
+      showTemporaryStatus('Pengumuman ditambah! Klik simpan untuk mengesahkan.');
+    };
+
+    // Remove announcement from lists
+    window.deleteAnnouncement = function(originalIndex) {
+      if (confirm('Adakah anda bersetuju memadamkan hebahan pengumuman teks ini?')) {
+        appConfig.announcements.splice(originalIndex, 1);
+        renderAnnouncements();
+        showTemporaryStatus('Pengumuman dipadam. Sila klik simpan perubahan.');
+      }
+    };
+
+    // JAVASCRIPT REAL-TIME SEARCH FOR SLIDESHOW ITEMS
+    window.searchSlides = function() {
+      searchSlidesQuery = document.getElementById('search-slides').value.trim().toLowerCase();
+      renderSlides();
+    };
+
+    // Renders the interactive Slide card items list
+    function renderSlides() {
+      const slidesRoot = document.getElementById('slides-list-root');
+      slidesRoot.innerHTML = '';
+
+      const filtered = appConfig.slides.filter(slide => {
+        if (!searchSlidesQuery) return true;
+        const comb = `${slide.title} ${slide.quote} ${slide.source || ''}`.toLowerCase();
+        return comb.includes(searchSlidesQuery);
+      });
+
+      if (filtered.length === 0) {
+        slidesRoot.innerHTML = `
+          <div class="col-span-2 text-center py-8 text-xs text-[#B8C7BE]/60 italic uppercase bg-[#062B24] rounded-xl border border-[#D8B45A]/10 w-full">
+            Tiada slide sepadan carian dijumpai.
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach((slide) => {
+        const trueGlobalIndex = appConfig.slides.findIndex(s => s.id === slide.id);
+        const card = document.createElement('div');
+        card.className = "bg-[#062B24] rounded-2xl border border-[#D8B45A]/20 overflow-hidden flex flex-col justify-between hover:border-[#D8B45A]/50 transition duration-300 relative";
+        
+        let headerImageHtml = '';
+        if (slide.imageUrl) {
+          headerImageHtml = `
+            <div class="h-28 w-full relative overflow-hidden bg-emerald-950">
+              <img src="${slide.imageUrl}" class="w-full h-full object-cover brightness-75">
+              <div class="absolute inset-0 bg-gradient-to-t from-[#062B24] to-transparent"></div>
+              <span class="absolute top-2.5 left-2.5 bg-[#0B3D33] text-emerald-400 border border-emerald-500/20 text-[8px] font-mono font-bold tracking-widest px-2 py-0.5 rounded leading-none uppercase">MEDIA TYPE</span>
+            </div>
+          `;
+        } else {
+          headerImageHtml = `
+            <div class="h-10 w-full bg-[#031411] flex items-center justify-between px-3 border-b border-[#D8B45A]/10">
+              <span class="bg-[#0B3D33] text-amber-400 border border-amber-500/20 text-[8px] font-mono font-bold tracking-widest px-2 py-0.5 rounded leading-none uppercase">TEXT ONLY</span>
+            </div>
+          `;
+        }
+
+        card.innerHTML = `
+          ${headerImageHtml}
+          <div class="p-4 space-y-2 flex-grow flex flex-col justify-between">
+            <div class="space-y-1">
+              <span class="text-[9px] font-bold text-[#D8B45A] tracking-widest uppercase block">${slide.title}</span>
+              <p class="text-xs text-[#F8F4E8] line-clamp-3 leading-relaxed font-serif italic">"${slide.quote}"</p>
+              ${slide.source ? `<p class="text-[10px] text-[#B8C7BE] font-semibold font-sans mt-1">— ${slide.source}</p>` : ''}
+            </div>
+
+            <!-- Card actions bar -->
+            <div class="flex items-center justify-between pt-3 border-t border-[#D8B45A]/10 mt-2">
+              <span class="text-[9px] font-mono text-[#B8C7BE] uppercase">ID: ${slide.id}</span>
+              
+              <div class="flex items-center gap-1">
+                <button type="button" onclick="deleteSlide(${trueGlobalIndex})" class="text-red-400 hover:text-red-300 p-2 hover:bg-red-500/10 rounded-lg transition" title="Padam Slide">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        slidesRoot.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    // Add new custom visual slide with presets/defaults
+    window.addSlide = function() {
+      const title = document.getElementById('new-slide-title').value.trim();
+      const quote = document.getElementById('new-slide-quote').value.trim();
+      const source = document.getElementById('new-slide-source').value.trim();
+      const image = document.getElementById('new-slide-image').value.trim();
+
+      if (!title || !quote) {
+        alert('Sila masukkan Tajuk Slaid dan Teks/Mutiara Kata Dakwah sebelum mendaftar.');
+        return;
+      }
+
+      const newS = {
+        id: 'user-slide-' + Date.now(),
+        title: title.toUpperCase(),
+        quote: quote,
+        source: source || undefined,
+        imageUrl: image || undefined,
+        type: image ? 'media' : 'text'
+      };
+
+      appConfig.slides.push(newS);
+
+      // Reset Inputs
+      document.getElementById('new-slide-title').value = '';
+      document.getElementById('new-slide-quote').value = '';
+      document.getElementById('new-slide-source').value = '';
+      document.getElementById('new-slide-image').value = '';
+      document.getElementById('image-preset-picker').classList.add('hidden');
+
+      renderSlides();
+      showTemporaryStatus('Slide Hebahan Berjaya Didaftarkan! Sila klik butang simpan.');
+    };
+
+    // Remove slide
+    window.deleteSlide = function(originalGlobalIndex) {
+      if (appConfig.slides.length <= 1) {
+        alert('Sistem mengehadkan sekurang-kurangnya satu Slaid Hebahan mesti aktif untuk paparan.');
+        return;
+      }
+      if (confirm('Adakah anda bersetuju memadamkan slaid hebahan dakwah/media ini secara kekal?')) {
+        appConfig.slides.splice(originalGlobalIndex, 1);
+        renderSlides();
+        showTemporaryStatus('Slaid dipadam. Sila klik simpan perubahan.');
+      }
+    };
+
+    // Show temporary banner updates status
+    function showTemporaryStatus(message) {
+      const statusBar = document.getElementById('sync-status');
+      statusBar.textContent = `Peringatan: ${message}`;
+      statusBar.className = "text-amber-400 font-bold tracking-wide animate-pulse";
+    }
+
+    // RESET SETUPS VALUES TO STANDALONES TEMPLATE FALLBACKS
+    window.triggerResetToDefault = function() {
+      if (confirm('Adakah anda pasti untuk mengosongkan localstorage dan menetapkan semula parameter skrin asalnya?')) {
+        localStorage.removeItem(LOCAL_STORAGE_KEY);
+        appConfig = { ...DEFAULT_CONFIG };
+        populateForm();
+        renderAnnouncements();
+        renderSlides();
+        lucide.createIcons();
+        
+        const statusBar = document.getElementById('sync-status');
+        statusBar.textContent = "Status: Berjaya Ditetapkan Semula!";
+        statusBar.className = "text-emerald-400 font-bold tracking-wide";
+        alert('Pembersihan Berjaya! Paparan skrin anda kini kembali ke tetapan asal kilang.');
+      }
+    };
+
+    // SAVE FINAL SETTINGS INPUTS TO PERSISTENT LOCALSTORAGE DOM
+    window.performSaveSettings = function() {
+      const updatedConfig = {
+        masjidName: document.getElementById('setup-masjid-name').value.trim() || DEFAULT_CONFIG.masjidName,
+        zoneCode: document.getElementById('setup-zone-code').value.trim() || DEFAULT_CONFIG.zoneCode,
+        qrData: document.getElementById('setup-qr-data').value.trim() || DEFAULT_CONFIG.qrData,
+        qrLabel: document.getElementById('setup-qr-label').value.trim() || DEFAULT_CONFIG.qrLabel,
+        qrDescription: document.getElementById('setup-qr-description').value.trim() || DEFAULT_CONFIG.qrDescription,
+        donationMessage: document.getElementById('setup-donation-message').value.trim() || DEFAULT_CONFIG.donationMessage,
+        slideInterval: Number(document.getElementById('setup-slide-interval').value) || 10,
+        prayerApiUrl: document.getElementById('setup-prayer-api-url').value.trim() || '',
+        announcements: [...appConfig.announcements],
+        slides: [...appConfig.slides],
+        subuhOffset: Number(document.getElementById('setup-offset-subuh').value) || 0,
+        syurukOffset: Number(document.getElementById('setup-offset-syuruk').value) || 0,
+        zohorOffset: Number(document.getElementById('setup-offset-zohor').value) || 0,
+        asarOffset: Number(document.getElementById('setup-offset-asar').value) || 0,
+        maghribOffset: Number(document.getElementById('setup-offset-maghrib').value) || 0,
+        isyakOffset: Number(document.getElementById('setup-offset-isyak').value) || 0
+      };
+
+      try {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedConfig));
+        appConfig = updatedConfig;
+        
+        const statusBar = document.getElementById('sync-status');
+        statusBar.textContent = "Status: Semua Naiktaraf Disimpan!";
+        statusBar.className = "text-emerald-400 font-bold tracking-wide";
+        
+        alert('Heibat! Tetapan sistem masjid anda telah disimpan ke LocalStorage. Sebarang tab skrin TV yang terbuka dengan fail standalone.html akan dipaparkan secara langsung tanpa perlu dimuat semula!');
+      } catch (e) {
+        alert('Ralat: Berlaku kegagalan semasa menyimpan data anda ke pelayar web. Sila semak semula storage anda.');
+      }
+    };
+
+    // EXPORT CONFIG FILE BACKUP (DOWNLOAD JSON FILE)
+    document.getElementById('btn-export').addEventListener('click', () => {
+      loadConfig();
+      const filename = `tetapan-tv-masjid-${Date.now()}.json`;
+      const strData = JSON.stringify(appConfig, null, 2);
+      
+      const blob = new Blob([strData], { type: 'application/json' });
+      const elem = window.document.createElement('a');
+      elem.href = window.URL.createObjectURL(blob);
+      elem.download = filename;
+      document.body.appendChild(elem);
+      elem.click();
+      document.body.removeChild(elem);
+    });
+
+    // IMPORT CONFIG JSON BACKUP FILE RESTORATION
+    window.importSetup = function(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (parsed && typeof parsed === 'object') {
+            appConfig = { ...DEFAULT_CONFIG, ...parsed };
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appConfig));
+            populateForm();
+            renderAnnouncements();
+            renderSlides();
+            lucide.createIcons();
+            
+            const statusBar = document.getElementById('sync-status');
+            statusBar.textContent = "Status: Berjaya Mengimport Konfigurasi!";
+            statusBar.className = "text-emerald-400 font-bold tracking-wide";
+            
+            alert('Berjaya mengimport! Setup fail konfigurasi luaran telah dimuatkan sepenuhnya.');
+          } else {
+            alert('Format fail json tidak sah.');
+          }
+        } catch (err) {
+          alert('Ralat semasa membaca fail: format JSON rosak atau tidak sah.');
+        }
+      };
+      reader.readAsText(file);
+    };
+
+    // Running initialization
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

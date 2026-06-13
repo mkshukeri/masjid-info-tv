@@ -118,12 +118,12 @@
       <!-- Header -->
       <div class="flex items-center gap-1.5 justify-center w-full z-10">
         <i data-lucide="heart-handshake" class="w-4 h-4 text-[#D8B45A] shrink-0"></i>
-        <span class="text-[#F8F4E8] font-bold text-xs tracking-[0.2em] uppercase">QR DERMA MASJID</span>
+        <span id="qr-label-header" class="text-[#F8F4E8] font-bold text-xs tracking-[0.2em] uppercase">QR DERMA MASJID</span>
       </div>
 
       <!-- Center Elements -->
       <div class="flex-1 flex flex-col justify-center items-center w-full my-3 gap-3 z-10">
-        <h3 class="text-[#D8B45A] font-semibold text-xs sm:text-sm tracking-[0.25em] uppercase mb-1">
+        <h3 id="qr-description-text" class="text-[#D8B45A] font-semibold text-xs sm:text-sm tracking-[0.25em] uppercase mb-1">
           IMBAS UNTUK DERMA
         </h3>
 
@@ -451,6 +451,8 @@
       masjidName: 'MASJID CONTOH AL-FALAH',
       zoneCode: 'WLY01 - KUALA LUMPUR / PUTRAJAYA',
       qrData: 'https://payment.example.com/masjid-al-falah',
+      qrLabel: 'QR DERMA MASJID',
+      qrDescription: 'Tabung Pembangunan Prasarana Masjid & Sistem Audio Baru',
       donationMessage: 'Setiap sumbangan ikhlas anda, pahala berpanjangan di akhirat.',
       slideInterval: 10,
       announcements: [
@@ -460,18 +462,21 @@
         'Jom imarahkan masjid dengan menghadirkan diri ke solat berjemaah setiap waktu.',
         'Terima kasih atas segala sumbangan ikhlas anda. Semoga Allah melipatgandakan ganjaran.'
       ],
+      slides: [...DUMMY_SLIDES],
       subuhOffset: 0,
       syurukOffset: 0,
       zohorOffset: 0,
       asarOffset: 0,
       maghribOffset: 0,
-      isyakOffset: 0
+      isyakOffset: 0,
+      prayerApiUrl: 'https://api.e-solat.gov.my/index.php?r=esolat/getmain&zone=WLY01&period=today'
     };
 
     const LOCAL_STORAGE_KEY = 'standalone_masjid_screen_v1';
     let appConfig = { ...DEFAULT_CONFIG };
     let currentSlideIdx = 0;
     let slideTimer = null;
+    let apiTimes = null;
 
     // Load from LocalStorage
     function loadConfig() {
@@ -479,9 +484,15 @@
         const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
         if (stored) {
           appConfig = { ...DEFAULT_CONFIG, ...JSON.parse(stored) };
+          if (!appConfig.slides || appConfig.slides.length === 0) {
+            appConfig.slides = [...DUMMY_SLIDES];
+          }
+        } else {
+          appConfig = { ...DEFAULT_CONFIG };
         }
       } catch (e) {
         console.error('Failed to load localStorage configuration.', e);
+        appConfig = { ...DEFAULT_CONFIG };
       }
     }
 
@@ -496,7 +507,86 @@
       applyConfigToUI();
       renderSlide();
       initSlideRotation();
-      calculateAndRenderSchedule();
+      fetchApiPrayerTimes();
+    }
+
+    // Parse Response from Malaysia e-Solat endpoint
+    function parsePrayerTimesResponse(data) {
+      if (!data) return null;
+      let targetObj = data;
+      if (data.prayerTime && Array.isArray(data.prayerTime) && data.prayerTime.length > 0) {
+        targetObj = data.prayerTime[0];
+      } else if (Array.isArray(data) && data.length > 0) {
+        targetObj = data[0];
+      } else if (data.data && Array.isArray(data.data) && data.data.length > 0) {
+        targetObj = data.data[0];
+        if (targetObj && targetObj.timings) {
+          targetObj = targetObj.timings;
+        }
+      } else if (data.data && typeof data.data === 'object') {
+        targetObj = data.data;
+        if (targetObj.timings) {
+          targetObj = targetObj.timings;
+        }
+      }
+
+      if (typeof targetObj !== 'object' || targetObj === null) {
+        return null;
+      }
+
+      const findValue = (keys) => {
+        for (const key of keys) {
+          if (targetObj[key] !== undefined) return String(targetObj[key]);
+          const lowerKey = key.toLowerCase();
+          const actualKey = Object.keys(targetObj).find(k => k.toLowerCase() === lowerKey);
+          if (actualKey && targetObj[actualKey] !== undefined) {
+            return String(targetObj[actualKey]);
+          }
+        }
+        return null;
+      };
+
+      const subuh = findValue(['subuh', 'fajr']);
+      const syuruk = findValue(['syuruk', 'shuruq', 'sunrise']);
+      const zohor = findValue(['zohor', 'dhuhr', 'noon', 'zuhr']);
+      const asar = findValue(['asar', 'asr']);
+      const maghrib = findValue(['maghrib', 'sunset']);
+      const isyak = findValue(['isyak', 'isha']);
+
+      if (subuh && zohor && asar && maghrib && isyak) {
+        return {
+          subuh,
+          syuruk: syuruk || '07:05',
+          zohor,
+          asar,
+          maghrib,
+          isyak
+        };
+      }
+      return null;
+    }
+
+    // Fetch live prayer times from Malaysia e-Solat
+    async function fetchApiPrayerTimes() {
+      if (!appConfig.prayerApiUrl) {
+        apiTimes = null;
+        calculateAndRenderSchedule();
+        return;
+      }
+      try {
+        const res = await fetch(appConfig.prayerApiUrl);
+        if (!res.ok) throw new Error('Network error');
+        const data = await res.json();
+        const parsed = parsePrayerTimesResponse(data);
+        if (parsed) {
+          apiTimes = parsed;
+          calculateAndRenderSchedule();
+        }
+      } catch (e) {
+        console.warn('API fetch failed or blocked by CORS. Using robust local fallback.', e);
+        apiTimes = null;
+        calculateAndRenderSchedule();
+      }
     }
 
     // Mathematical Standalone accurate Prayer Time Generator based on the day of the year
@@ -512,24 +602,50 @@
       const variance = 12 * Math.sin(angle);
 
       const items = [
-        { name: 'SUBUH', baseMin: 5 * 60 + 44 + variance, offset: appConfig.subuhOffset, icon: 'moon-star' },
-        { name: 'SYURUK', baseMin: 7 * 60 + 10 + variance, offset: appConfig.syurukOffset, icon: 'sunrise' },
-        { name: 'ZOHOR', baseMin: 13 * 60 + 15 + variance, offset: appConfig.zohorOffset, icon: 'sun' },
-        { name: 'ASAR', baseMin: 16 * 60 + 35 + variance, offset: appConfig.asarOffset, icon: 'sun-dim' },
-        { name: 'MAGHRIB', baseMin: 19 * 60 + 18 + variance, offset: appConfig.maghribOffset, icon: 'sunset' },
-        { name: 'ISYAK', baseMin: 20 * 60 + 30 + variance, offset: appConfig.isyakOffset, icon: 'moon' }
+        { name: 'SUBUH', baseMin: 5 * 60 + 44 + variance, offset: appConfig.subuhOffset, id: 'subuh', icon: 'moon-star' },
+        { name: 'SYURUK', baseMin: 7 * 60 + 10 + variance, offset: appConfig.syurukOffset, id: 'syuruk', icon: 'sunrise' },
+        { name: 'ZOHOR', baseMin: 13 * 60 + 15 + variance, offset: appConfig.zohorOffset, id: 'zohor', icon: 'sun' },
+        { name: 'ASAR', baseMin: 16 * 60 + 35 + variance, offset: appConfig.asarOffset, id: 'asar', icon: 'sun-dim' },
+        { name: 'MAGHRIB', baseMin: 19 * 60 + 18 + variance, offset: appConfig.maghribOffset, id: 'maghrib', icon: 'sunset' },
+        { name: 'ISYAK', baseMin: 20 * 60 + 30 + variance, offset: appConfig.isyakOffset, id: 'isyak', icon: 'moon' }
       ];
 
       return items.map((p, idx) => {
-        const totalMinutes = Math.round(p.baseMin + p.offset);
-        const hours = Math.floor(totalMinutes / 60) % 24;
-        const mins = totalMinutes % 60;
-        const timeStr = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+        let timeStr = '';
+        if (apiTimes && apiTimes[p.id]) {
+          const rawVal = apiTimes[p.id];
+          if (rawVal.includes(':')) {
+            const parts = rawVal.split(':');
+            if (parts.length >= 2) {
+              const h = parseInt(parts[0], 10);
+              const m = parseInt(parts[1], 10);
+              if (!isNaN(h) && !isNaN(m)) {
+                let totalMin = h * 60 + m + p.offset;
+                if (totalMin < 0) totalMin += 24 * 60;
+                const finalH = Math.floor(totalMin / 60) % 24;
+                const finalM = totalMin % 60;
+                timeStr = `${String(finalH).padStart(2, '0')}:${String(finalM).padStart(2, '0')}`;
+              }
+            }
+          }
+        }
+
+        if (!timeStr) {
+          const totalMinutes = Math.round(p.baseMin + p.offset);
+          const hours = Math.floor(totalMinutes / 60) % 24;
+          const mins = totalMinutes % 60;
+          timeStr = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+        }
+
+        const parts = timeStr.split(':');
+        const hSecs = parseInt(parts[0], 10) * 3600;
+        const mSecs = parseInt(parts[1], 10) * 60;
+
         return {
-          id: p.name.toLowerCase(),
+          id: p.id,
           name: p.name,
           time: timeStr,
-          totalSeconds: (hours * 60 + mins) * 60,
+          totalSeconds: hSecs + mSecs,
           icon: p.icon
         };
       });
@@ -644,7 +760,8 @@
 
     // Render single Slideshow Frame state
     function renderSlide() {
-      const active = DUMMY_SLIDES[currentSlideIdx] || DUMMY_SLIDES[0];
+      const activeSlides = appConfig.slides || DUMMY_SLIDES;
+      const active = activeSlides[currentSlideIdx] || activeSlides[0] || DUMMY_SLIDES[currentSlideIdx] || DUMMY_SLIDES[0];
       const categoryLabel = document.getElementById('slide-heading');
       categoryLabel.textContent = active.title;
 
@@ -706,7 +823,7 @@
       // Render dots
       const dotsContainer = document.getElementById('slide-dots');
       let dotsHtml = '';
-      DUMMY_SLIDES.forEach((_, idx) => {
+      activeSlides.forEach((_, idx) => {
         const isActive = idx === currentSlideIdx;
         dotsHtml += `
           <button onclick="gotoSlide(${idx})" class="w-2 h-2 rounded-full transition-all duration-300 transform hover:scale-125 focus:outline-none ${
@@ -727,8 +844,13 @@
     // Auto rotate slide
     function initSlideRotation() {
       if (slideTimer) clearInterval(slideTimer);
+      const activeSlides = appConfig.slides || DUMMY_SLIDES;
       slideTimer = setInterval(() => {
-        currentSlideIdx = (currentSlideIdx + 1) % DUMMY_SLIDES.length;
+        if (activeSlides.length > 0) {
+          currentSlideIdx = (currentSlideIdx + 1) % activeSlides.length;
+        } else {
+          currentSlideIdx = 0;
+        }
         renderSlide();
       }, appConfig.slideInterval * 1000);
     }
@@ -739,6 +861,16 @@
       document.getElementById('clock-zone-name').textContent = appConfig.zoneCode;
       document.getElementById('qr-target-string').textContent = appConfig.qrData;
       document.getElementById('donation-footer-text').textContent = appConfig.donationMessage;
+
+      // Dynamic QR card labels and description
+      const labelHeader = document.getElementById('qr-label-header');
+      if (labelHeader) {
+        labelHeader.textContent = appConfig.qrLabel || 'QR DERMA MASJID';
+      }
+      const descText = document.getElementById('qr-description-text');
+      if (descText) {
+        descText.textContent = appConfig.qrDescription || 'IMBAS UNTUK DERMA';
+      }
 
       // Populate looping Ticker text with absolute clean spacing
       const tickerTrack = document.getElementById('ticker-track');
@@ -871,6 +1003,7 @@
     // Save final inputs
     btnSaveSettings.addEventListener('click', () => {
       const newConfig = {
+        ...appConfig,
         masjidName: document.getElementById('input-masjid-name').value.trim() || DEFAULT_CONFIG.masjidName,
         zoneCode: document.getElementById('input-zone-code').value.trim() || DEFAULT_CONFIG.zoneCode,
         qrData: document.getElementById('input-qr-data').value.trim() || DEFAULT_CONFIG.qrData,
@@ -895,7 +1028,19 @@
     applyConfigToUI();
     renderSlide();
     initSlideRotation();
+    fetchApiPrayerTimes();
     tickClock();
+    
+    // Listen for storage events from settings.html for INSTANT real-time sync!
+    window.addEventListener('storage', (e) => {
+      if (e.key === LOCAL_STORAGE_KEY) {
+        loadConfig();
+        applyConfigToUI();
+        renderSlide();
+        initSlideRotation();
+        fetchApiPrayerTimes();
+      }
+    });
     
     // Core dynamic clock ticking scheduler, running once per second
     setInterval(tickClock, 1000);

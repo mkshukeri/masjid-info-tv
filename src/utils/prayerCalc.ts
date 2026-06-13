@@ -5,7 +5,7 @@ import { PrayerTime, AppConfig } from '../types';
  * Malaysia is close to the equator, so variation is minimal (+/- 15 minutes).
  * This ensures high-fidelity real-time simulation that is completely robust and standalone.
  */
-export function getBasePrayerTimes(date: Date, config: AppConfig): PrayerTime[] {
+export function getBasePrayerTimes(date: Date, config: AppConfig, apiTimes?: Record<string, string> | null): PrayerTime[] {
   const dayOfYear = getDayOfYear(date);
   
   // Base minutes from midnight
@@ -19,19 +19,42 @@ export function getBasePrayerTimes(date: Date, config: AppConfig): PrayerTime[] 
   const variance = 12 * Math.sin(angle); // variation in minutes
 
   const times = [
-    { name: 'SUBUH', baseMin: 5 * 60 + 44 + variance, offset: config.subuhOffset, iconName: 'MoonStar' },
-    { name: 'SYURUK', baseMin: 7 * 60 + 10 + variance, offset: config.syurukOffset, iconName: 'Sunrise' },
-    { name: 'ZOHOR', baseMin: 13 * 60 + 15 + variance, offset: config.zohorOffset, iconName: 'Sun' },
-    { name: 'ASAR', baseMin: 16 * 60 + 35 + variance, offset: config.asarOffset, iconName: 'SunDim' },
-    { name: 'MAGHRIB', baseMin: 19 * 60 + 18 + variance, offset: config.maghribOffset, iconName: 'Sunset' },
-    { name: 'ISYAK', baseMin: 20 * 60 + 30 + variance, offset: config.isyakOffset, iconName: 'Moon' },
+    { name: 'SUBUH', baseMin: 5 * 60 + 44 + variance, key: 'subuh', offset: config.subuhOffset, iconName: 'MoonStar' },
+    { name: 'SYURUK', baseMin: 7 * 60 + 10 + variance, key: 'syuruk', offset: config.syurukOffset, iconName: 'Sunrise' },
+    { name: 'ZOHOR', baseMin: 13 * 60 + 15 + variance, key: 'zohor', offset: config.zohorOffset, iconName: 'Sun' },
+    { name: 'ASAR', baseMin: 16 * 60 + 35 + variance, key: 'asar', offset: config.asarOffset, iconName: 'SunDim' },
+    { name: 'MAGHRIB', baseMin: 19 * 60 + 18 + variance, key: 'maghrib', offset: config.maghribOffset, iconName: 'Sunset' },
+    { name: 'ISYAK', baseMin: 20 * 60 + 30 + variance, key: 'isyak', offset: config.isyakOffset, iconName: 'Moon' },
   ];
 
-  return times.map((t, idx) => {
-    const totalMin = Math.round(t.baseMin + t.offset);
-    const hours = Math.floor(totalMin / 60) % 24;
-    const mins = totalMin % 60;
-    const timeStr = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+  return times.map((t) => {
+    let timeStr = '';
+    if (apiTimes && apiTimes[t.key]) {
+      const rawVal = apiTimes[t.key];
+      // Expecting format "HH:MM" or "HH:MM:SS" (e.g. 13:14:00 or 05:45)
+      if (rawVal.includes(':')) {
+        const parts = rawVal.split(':');
+        if (parts.length >= 2) {
+          const h = parseInt(parts[0], 10);
+          const m = parseInt(parts[1], 10);
+          if (!isNaN(h) && !isNaN(m)) {
+            let totalMin = h * 60 + m + t.offset;
+            if (totalMin < 0) totalMin += 24 * 60;
+            const finalH = Math.floor(totalMin / 60) % 24;
+            const finalM = totalMin % 60;
+            timeStr = `${String(finalH).padStart(2, '0')}:${String(finalM).padStart(2, '0')}`;
+          }
+        }
+      }
+    }
+
+    if (!timeStr) {
+      const totalMin = Math.round(t.baseMin + t.offset);
+      const hours = Math.floor(totalMin / 60) % 24;
+      const mins = totalMin % 60;
+      timeStr = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+    }
+
     return {
       id: t.name.toLowerCase(),
       name: t.name,
@@ -39,6 +62,67 @@ export function getBasePrayerTimes(date: Date, config: AppConfig): PrayerTime[] 
       iconName: t.iconName,
     };
   });
+}
+
+/**
+ * Universal tolerant response parser to handle Malaysia JAKIM E-Solat and international formats.
+ */
+export function parsePrayerTimesResponse(data: any): Record<string, string> | null {
+  if (!data) return null;
+  
+  let targetObj = data;
+  
+  if (data.prayerTime && Array.isArray(data.prayerTime) && data.prayerTime.length > 0) {
+    targetObj = data.prayerTime[0];
+  } else if (Array.isArray(data) && data.length > 0) {
+    targetObj = data[0];
+  } else if (data.data && Array.isArray(data.data) && data.data.length > 0) {
+    targetObj = data.data[0];
+    if (targetObj && targetObj.timings) {
+      targetObj = targetObj.timings;
+    }
+  } else if (data.data && typeof data.data === 'object') {
+    targetObj = data.data;
+    if (targetObj.timings) {
+      targetObj = targetObj.timings;
+    }
+  }
+
+  if (typeof targetObj !== 'object' || targetObj === null) {
+    return null;
+  }
+
+  const findValue = (keys: string[]): string | null => {
+    for (const key of keys) {
+      if (targetObj[key] !== undefined) return String(targetObj[key]);
+      const lowerKey = key.toLowerCase();
+      const actualKey = Object.keys(targetObj).find(k => k.toLowerCase() === lowerKey);
+      if (actualKey && targetObj[actualKey] !== undefined) {
+        return String(targetObj[actualKey]);
+      }
+    }
+    return null;
+  };
+
+  const subuh = findValue(['subuh', 'fajr']);
+  const syuruk = findValue(['syuruk', 'shuruq', 'sunrise']);
+  const zohor = findValue(['zohor', 'dhuhr', 'noon', 'zuhr']);
+  const asar = findValue(['asar', 'asr']);
+  const maghrib = findValue(['maghrib', 'sunset']);
+  const isyak = findValue(['isyak', 'isha']);
+
+  if (subuh && zohor && asar && maghrib && isyak) {
+    return {
+      subuh,
+      syuruk: syuruk || '07:05',
+      zohor,
+      asar,
+      maghrib,
+      isyak
+    };
+  }
+
+  return null;
 }
 
 function getDayOfYear(date: Date): number {

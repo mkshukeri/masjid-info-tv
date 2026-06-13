@@ -1,6 +1,7 @@
 export interface AppConfig {
   masjidName: string;
   zoneCode: string;
+  prayerApiUrl?: string; // Optional URL for fetching prayer times from API
   qrData: string;
   donationMessage: string;
   slideInterval: number; // in seconds
