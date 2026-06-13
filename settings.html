@@ -1051,7 +1051,9 @@
         zohorOffset: Number(document.getElementById('setup-offset-zohor').value) || 0,
         asarOffset: Number(document.getElementById('setup-offset-asar').value) || 0,
         maghribOffset: Number(document.getElementById('setup-offset-maghrib').value) || 0,
-        isyakOffset: Number(document.getElementById('setup-offset-isyak').value) || 0
+        isyakOffset: Number(document.getElementById('setup-offset-isyak').value) || 0,
+        qrImage: appConfig.qrImage || '',
+        customPresets: appConfig.customPresets || []
       };
 
       try {

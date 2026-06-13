@@ -184,15 +184,14 @@ async function startServer() {
         base64Body = matches[2];
       }
 
-      const safeName = (fileName || "uploaded_qr.png").replace(/[^a-zA-Z0-9.\-_]/g, "");
-      const destPath = path.join(qrDir, safeName);
+      const destPath = path.join(publicDir, "default_qr.png");
       
       fs.writeFileSync(destPath, Buffer.from(base64Body, "base64"));
       
       return res.json({ 
         success: true, 
-        fileName: safeName, 
-        url: `/qr/${safeName}` 
+        fileName: "default_qr.png", 
+        url: `/default_qr.png?v=${Date.now()}` 
       });
     } catch (e: any) {
       return res.status(500).json({ error: e.message });
