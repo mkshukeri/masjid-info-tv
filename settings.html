@@ -160,6 +160,8 @@
                 </button>
               </div>
               
+              <span id="qr-upload-status" class="block text-[9px] font-bold text-emerald-400 uppercase tracking-widest mt-1"></span>
+              
               <!-- QR Image Preview layout -->
               <div id="qr-image-preview-container" class="hidden mt-2 p-3 bg-[#031411] border border-[#D8B45A]/25 rounded-xl max-w-sm flex items-center gap-3">
                 <img id="qr-image-preview" src="" class="w-16 h-16 object-contain rounded bg-white p-1">
@@ -1137,12 +1139,58 @@
       'https://images.unsplash.com/photo-1466442929976-97f336a657be?auto=format&fit=crop&q=80&w=600'
     ];
 
-    // Helper to read file as base64
-    function getBase64(file) {
+    // Helper to read file as compressed base64 to stay well within proxy and server body limits
+    function getBase64(file, maxDimension = 1280, quality = 0.8) {
       return new Promise((resolve, reject) => {
+        // If file is not an image or is already quite small (e.g. < 150KB), resolve with original
+        if (!file.type.startsWith('image/') || file.size < 150 * 1024) {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = error => reject(error);
+          return;
+        }
+
         const reader = new FileReader();
         reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
+        reader.onload = (event) => {
+          const img = new Image();
+          img.src = event.target.result;
+          img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+
+            // Proportional scaling for standard TV screen backgrounds
+            if (width > maxDimension || height > maxDimension) {
+              if (width > height) {
+                height = Math.round((height * maxDimension) / width);
+                width = maxDimension;
+              } else {
+                width = Math.round((width * maxDimension) / height);
+                height = maxDimension;
+              }
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+              resolve(event.target.result); // Fallback
+              return;
+            }
+
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // Output as highly optimized compressed JPEG format
+            const dataUrl = canvas.toDataURL('image/jpeg', quality);
+            resolve(dataUrl);
+          };
+          img.onerror = () => {
+            resolve(event.target.result); // Fallback on image loading ralat
+          };
+        };
         reader.onerror = error => reject(error);
       });
     }
