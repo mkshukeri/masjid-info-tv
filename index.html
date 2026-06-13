@@ -487,47 +487,69 @@
 
     // Load configurations from server with local storage fallback
     async function loadConfig() {
+      // 1. Base default configuration fallback
       appConfig = { ...DEFAULT_CONFIG };
-      let loadedFromServer = false;
       
-      // 1. Try to read from active server config
+      // 2. Always load localStorage config first as our master local truth
+      let localConfig = null;
+      try {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (stored) {
+          localConfig = JSON.parse(stored);
+          appConfig = { ...appConfig, ...localConfig };
+        }
+      } catch (e) {
+        console.error('Failed to load localStorage configuration.', e);
+      }
+
+      // 3. Try to fetch from server to get any cloud edits
       try {
         const res = await fetch('/api/config');
         if (res.ok) {
           const serverData = await res.json();
-          appConfig = { ...appConfig, ...serverData };
-          loadedFromServer = true;
           
-          // Sync back to localStorage for seamless offline capabilities
-          try {
-            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appConfig));
-          } catch (storageErr) {}
+          const localLastUpdated = (localConfig && localConfig.lastUpdated) || 0;
+          const serverLastUpdated = serverData.lastUpdated || 0;
+          
+          // Only overwrite if server has a newer or equal timestamp
+          if (serverLastUpdated >= localLastUpdated) {
+            appConfig = { ...appConfig, ...serverData };
+            // Sync new server config back to localStorage for next offline access
+            try {
+              localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appConfig));
+            } catch (storageErr) {}
+          } else {
+            console.log('Local storage configuration is newer than server. Keeping local config.');
+            // Attempt to upload local newer config to the server to establish sync
+            try {
+              await fetch('/api/save-config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(appConfig)
+              });
+              console.log('Successfully synced newer local config to server.');
+            } catch (errSync) {
+              console.warn('Silent sync to server failed (running offline):', errSync);
+            }
+          }
         }
       } catch (e) {
-        console.log('Server config not available or running offline.');
+        console.log('Server config not available or running offline. Using browser storage.');
       }
 
-      // 2. If server fetch failed, try browser storage as fallback
-      if (!loadedFromServer) {
-        try {
-          const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
-          if (stored) {
-            appConfig = { ...appConfig, ...JSON.parse(stored) };
-          }
-        } catch (e) {
-          console.error('Failed to load localStorage configuration.', e);
-        }
-      }
-
-      // 3. Fallback check for slides array
+      // 4. Double check for vital arrays fallback
       if (!appConfig.slides || appConfig.slides.length === 0) {
         appConfig.slides = [...DUMMY_SLIDES];
+      }
+      if (!appConfig.announcements || appConfig.announcements.length === 0) {
+        appConfig.announcements = [...DEFAULT_CONFIG.announcements];
       }
     }
 
     // Save configuration
     async function saveConfig(newConfig) {
       appConfig = { ...newConfig };
+      appConfig.lastUpdated = Date.now(); // SET TIMESTAMP FOR CONFLICT RESOLUTION
       try {
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appConfig));
       } catch (e) {
