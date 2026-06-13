@@ -972,7 +972,7 @@
       const qrView = document.getElementById('qr-view-box');
       if (qrView) {
         if (appConfig.qrImage) {
-          qrView.innerHTML = `<img src="${appConfig.qrImage}" class="w-full h-full object-contain select-none animate-fade-in" />`;
+          qrView.innerHTML = `<img src="${appConfig.qrImage}" class="max-w-full max-h-full object-contain select-none animate-fade-in mx-auto my-auto" />`;
         } else {
           // Put back the original Mosque Vector SVG
           qrView.innerHTML = `

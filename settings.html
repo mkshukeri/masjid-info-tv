@@ -148,10 +148,10 @@
             <!-- Custom physical QR file Upload form -->
             <div class="space-y-2 md:col-span-2 bg-[#062B24]/40 p-4 rounded-xl border border-[#D8B45A]/20">
               <label class="block text-[9px] font-bold text-[#D8B45A] uppercase tracking-widest mb-1">
-                Muat Naik Fail Gambar QR Khas & Ganti SVG Lalai (.png, .jpg)
+                Muat Naik Fail Gambar QR Khas (.png, .jpg, .jpeg, .gif) & Ganti SVG Lalai (Autofit & Sokong Luar Talian)
               </label>
               <div class="flex flex-wrap items-center gap-3">
-                <input type="file" id="setup-qr-file-input" accept="image/*" class="hidden" onchange="uploadQRFile(event)">
+                <input type="file" id="setup-qr-file-input" accept="image/png, image/jpeg, image/jpg, image/gif" class="hidden" onchange="uploadQRFile(event)">
                 <button type="button" onclick="document.getElementById('setup-qr-file-input').click()" class="bg-[#0F4A3D] hover:bg-[#062B24] border border-[#D8B45A]/35 text-xs px-4 py-2 rounded-xl text-[#D8B45A] font-black transition flex items-center gap-2 shadow cursor-pointer">
                   <i data-lucide="upload-cloud" class="w-4 h-4"></i> Muat Naik QR Fizikal
                 </button>
@@ -1142,8 +1142,8 @@
     // Helper to read file as compressed base64 to stay well within proxy and server body limits
     function getBase64(file, maxDimension = 1280, quality = 0.8) {
       return new Promise((resolve, reject) => {
-        // If file is not an image or is already quite small (e.g. < 150KB), resolve with original
-        if (!file.type.startsWith('image/') || file.size < 150 * 1024) {
+        // If file is not an image, is a GIF, or is already quite small (e.g. < 150KB), resolve with original directly
+        if (!file.type.startsWith('image/') || file.type === 'image/gif' || file.size < 150 * 1024) {
           const reader = new FileReader();
           reader.readAsDataURL(file);
           reader.onload = () => resolve(reader.result);
