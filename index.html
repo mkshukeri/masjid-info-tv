@@ -487,6 +487,7 @@
     // Load configurations from server with local storage fallback
     async function loadConfig() {
       appConfig = { ...DEFAULT_CONFIG };
+      let loadedFromServer = false;
       
       // 1. Try to read from active server config
       try {
@@ -494,19 +495,27 @@
         if (res.ok) {
           const serverData = await res.json();
           appConfig = { ...appConfig, ...serverData };
+          loadedFromServer = true;
+          
+          // Sync back to localStorage for seamless offline capabilities
+          try {
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appConfig));
+          } catch (storageErr) {}
         }
       } catch (e) {
         console.log('Server config not available or running offline.');
       }
 
-      // 2. Try to override using browser storage (for fast instant local client feedback)
-      try {
-        const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
-        if (stored) {
-          appConfig = { ...appConfig, ...JSON.parse(stored) };
+      // 2. If server fetch failed, try browser storage as fallback
+      if (!loadedFromServer) {
+        try {
+          const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+          if (stored) {
+            appConfig = { ...appConfig, ...JSON.parse(stored) };
+          }
+        } catch (e) {
+          console.error('Failed to load localStorage configuration.', e);
         }
-      } catch (e) {
-        console.error('Failed to load localStorage configuration.', e);
       }
 
       // 3. Fallback check for slides array
@@ -516,13 +525,24 @@
     }
 
     // Save configuration
-    function saveConfig(newConfig) {
+    async function saveConfig(newConfig) {
       appConfig = { ...newConfig };
       try {
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appConfig));
       } catch (e) {
         console.error('Failed to save configuration to localStorage', e);
       }
+      
+      try {
+        await fetch('/api/save-config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(appConfig)
+        });
+      } catch (e) {
+        console.error('Failed to save configuration to server config.json', e);
+      }
+
       applyConfigToUI();
       renderSlide();
       initSlideRotation();
@@ -605,12 +625,12 @@
       if (source === 'live') {
         // ONLINE - Green color
         badge.className = "flex items-center gap-1 text-[8px] font-bold mt-1 uppercase tracking-wider bg-emerald-950/65 border border-emerald-500/30 px-1.5 py-0.5 rounded-md text-emerald-400 w-max cursor-default transition-all duration-300";
-        text.innerHTML = `<span class="relative flex h-1.5 w-1.5 mr-0.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span></span> API STATUS: ONLINE (${zone})`;
+        text.innerHTML = `<span class="relative inline-flex h-1.5 w-1.5 mr-1 align-middle"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span></span> API STATUS: ONLINE (${zone})`;
         badge.title = `Kemas kini terakhir: ${lastUpdated}`;
       } else {
         // OFFLINE - Orange color (for cached or local calculation fallback)
         badge.className = "flex items-center gap-1 text-[8px] font-bold mt-1 uppercase tracking-wider bg-orange-950/65 border border-orange-500/30 px-1.5 py-0.5 rounded-md text-orange-400 w-max cursor-default transition-all duration-300";
-        text.innerHTML = `<span class="relative flex h-1.5 w-1.5 mr-0.5"><span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-orange-500"></span></span> API STATUS: OFFLINE (${zone})`;
+        text.innerHTML = `<span class="relative inline-flex h-1.5 w-1.5 mr-1 align-middle"><span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-orange-500"></span></span> API STATUS: OFFLINE (${zone})`;
         badge.title = lastUpdated ? `Rekod Cache: ${lastUpdated}` : "Menggunakan pengiraan matematik solat tempatan";
       }
     }

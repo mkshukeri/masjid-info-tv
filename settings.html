@@ -718,22 +718,43 @@
     };
 
     // Load setup data
-    function loadConfig() {
+    async function loadConfig() {
+      appConfig = { ...DEFAULT_CONFIG };
+      let loadedFromServer = false;
+
+      // 1. Try to read from active server config
       try {
-        const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          appConfig = { ...DEFAULT_CONFIG, ...parsed };
-          // fallback slide list if not defined in older localStorage entries
-          if (!appConfig.slides || appConfig.slides.length === 0) {
-            appConfig.slides = [...DEF_SLIDES];
-          }
-        } else {
-          appConfig = { ...DEFAULT_CONFIG };
+        const res = await fetch('/api/config');
+        if (res.ok) {
+          const serverData = await res.json();
+          appConfig = { ...appConfig, ...serverData };
+          loadedFromServer = true;
+          
+          // Sync back to localStorage for seamless offline capabilities
+          try {
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appConfig));
+          } catch (storageErr) {}
         }
       } catch (e) {
-        console.warn('Could not read from localstorage, setting default configuration template.', e);
-        appConfig = { ...DEFAULT_CONFIG };
+        console.log('Server config not available or running offline.');
+      }
+
+      // 2. If server fetch failed, try browser storage as fallback
+      if (!loadedFromServer) {
+        try {
+          const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            appConfig = { ...DEFAULT_CONFIG, ...parsed };
+          }
+        } catch (e) {
+          console.warn('Could not read from localstorage, setting default configuration template.', e);
+        }
+      }
+
+      // Fallback slide list if empty
+      if (!appConfig.slides || appConfig.slides.length === 0) {
+        appConfig.slides = [...DEF_SLIDES];
       }
     }
 
@@ -1009,8 +1030,8 @@
       }
     };
 
-    // SAVE FINAL SETTINGS INPUTS TO PERSISTENT LOCALSTORAGE DOM
-    window.performSaveSettings = function() {
+    // SAVE FINAL SETTINGS INPUTS TO PERSISTENT LOCALSTORAGE DOM AND SERVER CONFIG
+    window.performSaveSettings = async function() {
       const updatedConfig = {
         masjidName: document.getElementById('setup-masjid-name').value.trim() || DEFAULT_CONFIG.masjidName,
         zoneCode: document.getElementById('setup-zone-code').value.trim() || DEFAULT_CONFIG.zoneCode,
@@ -1034,13 +1055,24 @@
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedConfig));
         appConfig = updatedConfig;
         
+        // Also sync/write to the server config
+        try {
+          await fetch('/api/save-config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedConfig)
+          });
+        } catch (serverErr) {
+          console.warn("Gagal menyimpan ke konfigurasi pelayan (mungkin berjalan luar talian):", serverErr);
+        }
+
         const statusBar = document.getElementById('sync-status');
         statusBar.textContent = "Status: Semua Naiktaraf Disimpan!";
         statusBar.className = "text-emerald-400 font-bold tracking-wide";
         
-        alert('Hebat! Tetapan sistem masjid anda telah disimpan ke LocalStorage. Sebarang tab skrin TV yang terbuka dengan alamat utama akan dipaparkan secara langsung tanpa perlu dimuat semula!');
+        alert('Hebat! Tetapan sistem masjid anda telah disimpan ke Pelayan & LocalStorage. Sebarang tab skrin TV yang terbuka dengan alamat utama akan dipaparkan secara langsung tanpa perlu dimuat semula!');
       } catch (e) {
-        alert('Ralat: Berlaku kegagalan semasa menyimpan data anda ke pelayar web. Sila semak semula storage anda.');
+        alert('Ralat: Berlaku kegagalan semasa menyimpan data anda. Sila semak semula storage anda.');
       }
     };
 
