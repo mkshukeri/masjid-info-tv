@@ -129,27 +129,29 @@
 
         <!-- Core QR Container -->
         <div class="relative p-3.5 bg-white rounded-xl shadow-lg w-44 h-44 sm:w-48 sm:h-48 flex items-center justify-center transform transition duration-500 hover:scale-105 border-2 border-[#D8B45A] group cursor-pointer">
-          <!-- Vector SVG QR -->
-          <svg class="w-full h-full text-[#062B24]" viewBox="0 0 100 100" fill="currentColor">
-            <path d="M0,0 h28 v28 h-28 z M4,4 h20 v20 h-20 z M8,8 h12 v12 h-12 z" />
-            <path d="M72,0 h28 v28 h-28 z M76,4 h20 v20 h-20 z M80,8 h12 v12 h-12 z" />
-            <path d="M0,72 h28 v28 h-28 z M4,76 h20 v20 h-20 z M8,80 h12 v12 h-12 z" />
-            <path d="M76,76 h12 v12 h-12 z M80,80 h4 v4 h-4 z" />
-            <path d="M34,2 h4 v4 h-4 z M42,0 h6 v4 h-6 z M54,2 h4 v4 h-4 z M62,0 h4 v6 h-4 z" />
-            <path d="M34,10 h8 v4 h-8 z M46,8 h4 v4 h-4 z M54,10 h6 v4 h-6 z M64,8 h4 v4 h-4 z" />
-            <path d="M34,18 h4 v4 h-4 z M42,16 h8 v4 h-8 z M52,18 h4 v4 h-4 z M60,16 h6 v4 h-6 z" />
-            <path d="M34,24 h6 v4 h-6 z M44,24 h8 v4 h-8 z M56,24 h4 v4 h-4 z M64,24 h4 v4 h-4 z" />
-            <path d="M0,34 h4 v6 h-4 z M8,34 h6 v4 h-6 z M18,34 h8 v4 h-8 z M28,34 h4 v4 h-4 z M34,34 h8 v4 h-8 z M46,34 h8 v4 h-8 z M58,34 h6 v4 h-6 z M68,34 h8 v4 h-8 z M80,34 h6 v4 h-6 z M90,34 h10 v4 h-10 z" />
-            <path d="M4,42 h10 v4 h-10 z M18,42 h4 v4 h-4 z M28,42 h10 v4 h-10 z M42,42 h4 v4 h-4 z M50,42 h8 v4 h-8 z M62,42 h8 v4 h-8 z M74,42 h4 v4 h-4 z M82,42 h10 v4 h-10 z" />
-            <path d="M0,50 h8 v4 h-8 z M14,50 h4 v4 h-4 z M22,50 h6 v4 h-6 z M32,50 h12 v4 h-12 z M48,50 h4 v4 h-4 z M56,50 h10 v4 h-10 z M70,50 h4 v4 h-4 z M78,50 h12 v4 h-12 z M94,50 h6 v4 h-6 z" />
-            <path d="M4,58 h4 v6 h-4 z M14,58 h8 v4 h-8 z M26,58 h6 v4 h-6 z M34,58 h10 v4 h-10 z M48,58 h4 v4 h-8 z M56,58 h6 v4 h-6 z M66,58 h12 v4 h-12 z M82,58 h8 v4 h-8 z M94,58 h4 v4 h-4 z" />
-            <path d="M0,66 h6 v4 h-6 z M12,66 h4 v4 h-4 z M20,66 h12 v4 h-12 z M36,66 h8 v4 h-8 z M48,66 h10 v4 h-10 z M62,66 h8 v4 h-8 z M74,66 h4 v4 h-4 z M82,66 h14 v4 h-14 z" />
-            <path d="M34,74 h6 v4 h-6 z M44,72 h10 v4 h-10 z M58,74 h6 v4 h-6 z M66,72 h4 v4 h-4 z" />
-            <path d="M34,82 h4 v4 h-4 z M40,80 h8 v4 h-8 z M52,82 h6 v4 h-6 z M62,80 h10 v4 h-10 z" />
-            <circle cx="50" cy="50" r="16" fill="#F8F4E8" stroke="#D8B45A" stroke-width="1.5" />
-            <!-- Tiny mosque symbol center -->
-            <path d="M50,42 c-2.5,0 -4,2.5 -4,5 h8 c0,-2.5 -1.5,-5 -4,-5 z M46.5,47 h7 v4 h-7 z M48.5,51 h3 v3 h-3 z" fill="#062B24" />
-          </svg>
+          <div id="qr-view-box" class="w-full h-full flex items-center justify-center">
+            <!-- Vector SVG QR -->
+            <svg class="w-full h-full text-[#062B24]" viewBox="0 0 100 100" fill="currentColor">
+              <path d="M0,0 h28 v28 h-28 z M4,4 h20 v20 h-20 z M8,8 h12 v12 h-12 z" />
+              <path d="M72,0 h28 v28 h-28 z M76,4 h20 v20 h-20 z M80,8 h12 v12 h-12 z" />
+              <path d="M0,72 h28 v28 h-28 z M4,76 h20 v20 h-20 z M8,80 h12 v12 h-12 z" />
+              <path d="M76,76 h12 v12 h-12 z M80,80 h4 v4 h-4 z" />
+              <path d="M34,2 h4 v4 h-4 z M42,0 h6 v4 h-6 z M54,2 h4 v4 h-4 z M62,0 h4 v6 h-4 z" />
+              <path d="M34,10 h8 v4 h-8 z M46,8 h4 v4 h-4 z M54,10 h6 v4 h-6 z M64,8 h4 v4 h-4 z" />
+              <path d="M34,18 h4 v4 h-4 z M42,16 h8 v4 h-8 z M52,18 h4 v4 h-4 z M60,16 h6 v4 h-6 z" />
+              <path d="M34,24 h6 v4 h-6 z M44,24 h8 v4 h-8 z M56,24 h4 v4 h-4 z M64,24 h4 v4 h-4 z" />
+              <path d="M0,34 h4 v6 h-4 z M8,34 h6 v4 h-6 z M18,34 h8 v4 h-8 z M28,34 h4 v4 h-4 z M34,34 h8 v4 h-8 z M46,34 h8 v4 h-8 z M58,34 h6 v4 h-6 z M68,34 h8 v4 h-8 z M80,34 h6 v4 h-6 z M90,34 h10 v4 h-10 z" />
+              <path d="M4,42 h10 v4 h-10 z M18,42 h4 v4 h-4 z M28,42 h10 v4 h-10 z M42,42 h4 v4 h-4 z M50,42 h8 v4 h-8 z M62,42 h8 v4 h-8 z M74,42 h4 v4 h-4 z M82,42 h10 v4 h-10 z" />
+              <path d="M0,50 h8 v4 h-8 z M14,50 h4 v4 h-4 z M22,50 h6 v4 h-6 z M32,50 h12 v4 h-12 z M48,50 h4 v4 h-4 z M56,50 h10 v4 h-10 z M70,50 h4 v4 h-4 z M78,50 h12 v4 h-12 z M94,50 h6 v4 h-6 z" />
+              <path d="M4,58 h4 v6 h-4 z M14,58 h8 v4 h-8 z M26,58 h6 v4 h-6 z M34,58 h10 v4 h-10 z M48,58 h4 v4 h-8 z M56,58 h6 v4 h-6 z M66,58 h12 v4 h-12 z M82,58 h8 v4 h-8 z M94,58 h4 v4 h-4 z" />
+              <path d="M0,66 h6 v4 h-6 z M12,66 h4 v4 h-4 z M20,66 h12 v4 h-12 z M36,66 h8 v4 h-8 z M48,66 h10 v4 h-10 z M62,66 h8 v4 h-8 z M74,66 h4 v4 h-4 z M82,66 h14 v4 h-14 z" />
+              <path d="M34,74 h6 v4 h-6 z M44,72 h10 v4 h-10 z M58,74 h6 v4 h-6 z M66,72 h4 v4 h-4 z" />
+              <path d="M34,82 h4 v4 h-4 z M40,80 h8 v4 h-8 z M52,82 h6 v4 h-6 z M62,80 h10 v4 h-10 z" />
+              <circle cx="50" cy="50" r="16" fill="#F8F4E8" stroke="#D8B45A" stroke-width="1.5" />
+              <!-- Tiny mosque symbol center -->
+              <path d="M50,42 c-2.5,0 -4,2.5 -4,5 h8 c0,-2.5 -1.5,-5 -4,-5 z M46.5,47 h7 v4 h-7 z M48.5,51 h3 v3 h-3 z" fill="#062B24" />
+            </svg>
+          </div>
 
           <!-- Scan lines -->
           <div class="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-[#D8B45A] rounded-tl"></div>
@@ -478,21 +480,34 @@
     let slideTimer = null;
     let apiTimes = null;
 
-    // Load from LocalStorage
-    function loadConfig() {
+    // Load configurations from server with local storage fallback
+    async function loadConfig() {
+      appConfig = { ...DEFAULT_CONFIG };
+      
+      // 1. Try to read from active server config
+      try {
+        const res = await fetch('/api/config');
+        if (res.ok) {
+          const serverData = await res.json();
+          appConfig = { ...appConfig, ...serverData };
+        }
+      } catch (e) {
+        console.log('Server config not available or running offline.');
+      }
+
+      // 2. Try to override using browser storage (for fast instant local client feedback)
       try {
         const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
         if (stored) {
-          appConfig = { ...DEFAULT_CONFIG, ...JSON.parse(stored) };
-          if (!appConfig.slides || appConfig.slides.length === 0) {
-            appConfig.slides = [...DUMMY_SLIDES];
-          }
-        } else {
-          appConfig = { ...DEFAULT_CONFIG };
+          appConfig = { ...appConfig, ...JSON.parse(stored) };
         }
       } catch (e) {
         console.error('Failed to load localStorage configuration.', e);
-        appConfig = { ...DEFAULT_CONFIG };
+      }
+
+      // 3. Fallback check for slides array
+      if (!appConfig.slides || appConfig.slides.length === 0) {
+        appConfig.slides = [...DUMMY_SLIDES];
       }
     }
 
@@ -872,6 +887,37 @@
         descText.textContent = appConfig.qrDescription || 'IMBAS UNTUK DERMA';
       }
 
+      // Render custom QR physical image OR vector SVG QR if empty
+      const qrView = document.getElementById('qr-view-box');
+      if (qrView) {
+        if (appConfig.qrImage) {
+          qrView.innerHTML = `<img src="${appConfig.qrImage}" class="w-full h-full object-contain select-none animate-fade-in" />`;
+        } else {
+          // Put back the original Mosque Vector SVG
+          qrView.innerHTML = `
+            <svg class="w-full h-full text-[#062B24]" viewBox="0 0 100 100" fill="currentColor">
+              <path d="M0,0 h28 v28 h-28 z M4,4 h20 v20 h-20 z M8,8 h12 v12 h-12 z" />
+              <path d="M72,0 h28 v28 h-28 z M76,4 h20 v20 h-20 z M80,8 h12 v12 h-12 z" />
+              <path d="M0,72 h28 v28 h-28 z M4,76 h20 v20 h-20 z M8,80 h12 v12 h-12 z" />
+              <path d="M76,76 h12 v12 h-12 z M80,80 h4 v4 h-4 z" />
+              <path d="M34,2 h4 v4 h-4 z M42,0 h6 v4 h-6 z M54,2 h4 v4 h-4 z M62,0 h4 v6 h-4 z" />
+              <path d="M34,10 h8 v4 h-8 z M46,8 h4 v4 h-4 z M54,10 h6 v4 h-6 z M64,8 h4 v4 h-4 z" />
+              <path d="M34,18 h4 v4 h-4 z M42,16 h8 v4 h-8 z M52,18 h4 v4 h-4 z M60,16 h6 v4 h-6 z" />
+              <path d="M34,24 h6 v4 h-6 z M44,24 h8 v4 h-8 z M56,24 h4 v4 h-4 z M64,24 h4 v4 h-4 z" />
+              <path d="M0,34 h4 v6 h-4 z M8,34 h6 v4 h-6 z M18,34 h8 v4 h-8 z M28,34 h4 v4 h-4 z M34,34 h8 v4 h-8 z M46,34 h8 v4 h-8 z M58,34 h6 v4 h-6 z M68,34 h8 v4 h-8 z M80,34 h6 v4 h-6 z M90,34 h10 v4 h-10 z" />
+              <path d="M4,42 h10 v4 h-10 z M18,42 h4 v4 h-4 z M28,42 h10 v4 h-10 z M42,42 h4 v4 h-4 z M50,42 h8 v4 h-8 z M62,42 h8 v4 h-8 z M74,42 h4 v4 h-4 z M82,42 h10 v4 h-10 z" />
+              <path d="M0,50 h8 v4 h-8 z M14,50 h4 v4 h-4 z M22,50 h6 v4 h-6 z M32,50 h12 v4 h-12 z M48,50 h4 v4 h-4 z M56,50 h10 v4 h-10 z M70,50 h4 v4 h-4 z M78,50 h12 v4 h-12 z M94,50 h6 v4 h-6 z" />
+              <path d="M4,58 h4 v6 h-4 z M14,58 h8 v4 h-8 z M26,58 h6 v4 h-6 z M34,58 h10 v4 h-10 z M48,58 h4 v4 h-8 z M56,58 h6 v4 h-6 z M66,58 h12 v4 h-12 z M82,58 h8 v4 h-8 z M94,58 h4 v4 h-4 z" />
+              <path d="M0,66 h6 v4 h-6 z M12,66 h4 v4 h-4 z M20,66 h12 v4 h-12 z M36,66 h8 v4 h-8 z M48,66 h10 v4 h-10 z M62,66 h8 v4 h-8 z M74,66 h4 v4 h-4 z M82,66 h14 v4 h-14 z" />
+              <path d="M34,74 h6 v4 h-6 z M44,72 h10 v4 h-10 z M58,74 h6 v4 h-6 z M66,72 h4 v4 h-4 z" />
+              <path d="M34,82 h4 v4 h-4 z M40,80 h8 v4 h-8 z M52,82 h6 v4 h-6 z M62,80 h10 v4 h-10 z" />
+              <circle cx="50" cy="50" r="16" fill="#F8F4E8" stroke="#D8B45A" stroke-width="1.5" />
+              <path d="M50,42 c-2.5,0 -4,2.5 -4,5 h8 c0,-2.5 -1.5,-5 -4,-5 z M46.5,47 h7 v4 h-7 z M48.5,51 h3 v3 h-3 z" fill="#062B24" />
+            </svg>
+          `;
+        }
+      }
+
       // Populate looping Ticker text with absolute clean spacing
       const tickerTrack = document.getElementById('ticker-track');
       const joined = appConfig.announcements.join('   ✦   ');
@@ -1024,21 +1070,24 @@
 
 
     // 3. RUNTIME INITIALIZATION
-    loadConfig();
-    applyConfigToUI();
-    renderSlide();
-    initSlideRotation();
-    fetchApiPrayerTimes();
-    tickClock();
+    async function startStandalone() {
+      await loadConfig();
+      applyConfigToUI();
+      renderSlide();
+      initSlideRotation();
+      await fetchApiPrayerTimes();
+      tickClock();
+    }
+    startStandalone();
     
     // Listen for storage events from settings.html for INSTANT real-time sync!
-    window.addEventListener('storage', (e) => {
+    window.addEventListener('storage', async (e) => {
       if (e.key === LOCAL_STORAGE_KEY) {
-        loadConfig();
+        await loadConfig();
         applyConfigToUI();
         renderSlide();
         initSlideRotation();
-        fetchApiPrayerTimes();
+        await fetchApiPrayerTimes();
       }
     });
     

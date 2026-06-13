@@ -145,6 +145,31 @@
               <input type="text" id="setup-qr-description" class="w-full bg-[#062B24] border border-[#D8B45A]/35 rounded-xl px-4 py-3 text-[#F8F4E8] focus:outline-none focus:border-[#D8B45A] text-sm font-sans" placeholder="E.g. Tabung Pembangunan Prasarana Masjid & Sistem Audio Baru">
             </div>
 
+            <!-- Custom physical QR file Upload form -->
+            <div class="space-y-2 md:col-span-2 bg-[#062B24]/40 p-4 rounded-xl border border-[#D8B45A]/20">
+              <label class="block text-[9px] font-bold text-[#D8B45A] uppercase tracking-widest mb-1">
+                Muat Naik Fail Gambar QR Khas & Ganti SVG Lalai (.png, .jpg)
+              </label>
+              <div class="flex flex-wrap items-center gap-3">
+                <input type="file" id="setup-qr-file-input" accept="image/*" class="hidden" onchange="uploadQRFile(event)">
+                <button type="button" onclick="document.getElementById('setup-qr-file-input').click()" class="bg-[#0F4A3D] hover:bg-[#062B24] border border-[#D8B45A]/35 text-xs px-4 py-2 rounded-xl text-[#D8B45A] font-black transition flex items-center gap-2 shadow cursor-pointer">
+                  <i data-lucide="upload-cloud" class="w-4 h-4"></i> Muat Naik QR Fizikal
+                </button>
+                <button type="button" onclick="resetQRToDefault()" class="bg-[#031411] hover:bg-[#062B24] border border-[#D8B45A]/15 text-xs px-4 py-2 rounded-xl text-amber-400 font-bold transition flex items-center gap-1.5 shadow cursor-pointer">
+                  <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Gunakan SVG Asal
+                </button>
+              </div>
+              
+              <!-- QR Image Preview layout -->
+              <div id="qr-image-preview-container" class="hidden mt-2 p-3 bg-[#031411] border border-[#D8B45A]/25 rounded-xl max-w-sm flex items-center gap-3">
+                <img id="qr-image-preview" src="" class="w-16 h-16 object-contain rounded bg-white p-1">
+                <div class="text-[9px] font-mono text-[#B8C7BE] uppercase">
+                  <p class="font-black text-emerald-400">QR AKTIF: GAMBAR INTEGRASI</p>
+                  <span id="qr-image-preview-url" class="truncate block max-w-[180px] text-[8px] font-bold tracking-wider mt-0.5"></span>
+                </div>
+              </div>
+            </div>
+
             <div class="space-y-1 md:col-span-2">
               <label class="block text-[10px] font-bold text-[#B8C7BE] uppercase tracking-wider">Mesej Banner / Footer Ticker Derma</label>
               <input type="text" id="setup-donation-message" class="w-full bg-[#062B24] border border-[#D8B45A]/35 rounded-xl px-4 py-3 text-[#F8F4E8] focus:outline-none focus:border-[#D8B45A] text-sm">
@@ -234,20 +259,37 @@
                 <textarea id="new-slide-quote" rows="2" class="w-full bg-[#062B24] border border-[#D8B45A]/25 rounded-lg px-3 py-2 text-xs text-[#F8F4E8] focus:outline-none focus:border-[#D8B45A] custom-scrollbar" placeholder="Sila masukkan petikan hadith atau pengisian ibadah..."></textarea>
               </div>
               <div class="md:col-span-2">
-                <label class="block text-[9px] font-bold text-[#B8C7BE] uppercase tracking-wider mb-1">Pautan Gambar Latar (Url) - Biarkan Kosong untuk Slaid Teks Sahaja</label>
-                <div class="flex gap-2">
-                  <input type="text" id="new-slide-image" class="flex-1 bg-[#062B24] border border-[#D8B45A]/25 rounded-lg px-3 py-2 text-xs text-[#F8F4E8] focus:outline-none focus:border-[#D8B45A] font-mono text-xs" placeholder="https://images.unsplash.com/... atau pilih galeri di bawah">
-                  <button type="button" onclick="setPresetImage()" class="bg-[#0F4A3D] hover:bg-[#062B24] border border-[#D8B45A]/35 text-xs px-3 rounded-lg text-[#D8B45A] font-bold transition flex items-center gap-1">
-                    <i data-lucide="image" class="w-3.5 h-3.5"></i> Presets
+                <label class="block text-[9px] font-bold text-[#B8C7BE] uppercase tracking-wider mb-1">Gambar Latar Slaid (Muat Naik atau Pilih Preset)</label>
+                <div class="flex flex-wrap gap-2">
+                  <input type="text" id="new-slide-image" class="flex-1 min-w-[200px] bg-[#062B24] border border-[#D8B45A]/25 rounded-lg px-3 py-2 text-xs text-[#F8F4E8] focus:outline-none focus:border-[#D8B45A] font-mono" placeholder="Pautan URL gambar atau muat naik di sebelah...">
+                  
+                  <input type="file" id="upload-slide-file" accept="image/*" class="hidden" onchange="uploadSlideImage(event)">
+                  <button type="button" onclick="document.getElementById('upload-slide-file').click()" class="bg-[#0F4A3D] hover:bg-[#062B24] border border-[#D8B45A]/35 text-xs px-3 py-2 rounded-lg text-[#D8B45A] font-bold transition flex items-center gap-1 shrink-0 cursor-pointer">
+                    <i data-lucide="upload-cloud" class="w-3.5 h-3.5"></i> Muat Naik Gambar Info
+                  </button>
+
+                  <button type="button" onclick="setPresetImage()" class="bg-[#0F4A3D] hover:bg-[#062B24] border border-[#D8B45A]/35 text-xs px-3 py-2 rounded-lg text-[#D8B45A] font-bold transition flex items-center gap-1 shrink-0 cursor-pointer">
+                    <i data-lucide="image" class="w-3.5 h-3.5"></i> Pilih Preset
                   </button>
                 </div>
-                <!-- Preset Options Gallery Mini -->
-                <div id="image-preset-picker" class="hidden grid grid-cols-4 gap-2 mt-2 p-2 bg-[#062B24] rounded-lg border border-[#D8B45A]/15">
-                  <button type="button" onclick="selectPreset('https://images.unsplash.com/photo-1590075865003-e48277faa558?auto=format&fit=crop&q=80&w=600')" class="outline-none focus:border-[#D8B45A] border border-transparent rounded overflow-hidden h-10"><img src="https://images.unsplash.com/photo-1590075865003-e48277faa558?auto=format&fit=crop&q=80&w=150" class="w-full h-full object-cover"></button>
-                  <button type="button" onclick="selectPreset('https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&q=80&w=600')" class="outline-none focus:border-[#D8B45A] border border-transparent rounded overflow-hidden h-10"><img src="https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&q=80&w=150" class="w-full h-full object-cover"></button>
-                  <button type="button" onclick="selectPreset('https://images.unsplash.com/photo-1542856391-010fb87dcfed?auto=format&fit=crop&q=80&w=600')" class="outline-none focus:border-[#D8B45A] border border-transparent rounded overflow-hidden h-10"><img src="https://images.unsplash.com/photo-1542856391-010fb87dcfed?auto=format&fit=crop&q=80&w=150" class="w-full h-full object-cover"></button>
-                  <button type="button" onclick="selectPreset('https://images.unsplash.com/photo-1466442929976-97f336a657be?auto=format&fit=crop&q=80&w=600')" class="outline-none focus:border-[#D8B45A] border border-transparent rounded overflow-hidden h-10"><img src="https://images.unsplash.com/photo-1466442929976-97f336a657be?auto=format&fit=crop&q=80&w=150" class="w-full h-full object-cover"></button>
+                
+                <!-- Preset Gallery Container -->
+                <div id="preset-gallery-wrapper" class="hidden mt-2 space-y-2 bg-[#031411] p-3 rounded-xl border border-[#D8B45A]/20">
+                  <div class="flex justify-between items-center bg-[#062B24] p-2 rounded-lg border border-[#D8B45A]/15">
+                    <span class="text-[9px] font-bold text-[#B8C7BE] uppercase tracking-wider">Galeri Preset Pilihan:</span>
+                    
+                    <input type="file" id="upload-preset-file" accept="image/*" class="hidden" onchange="uploadPresetImage(event)">
+                    <button type="button" onclick="document.getElementById('upload-preset-file').click()" class="text-[#D8B45A] hover:text-[#F8F4E8] text-[9px] font-black tracking-widest bg-[#031411] px-2 py-1.5 rounded border border-[#D8B45A]/30 flex items-center gap-1 transition cursor-pointer">
+                      <i data-lucide="plus" class="w-3 h-3"></i> Tambah Preset Fail
+                    </button>
+                  </div>
+                  
+                  <div id="image-preset-picker" class="grid grid-cols-4 sm:grid-cols-6 gap-2">
+                    <!-- Dynamically rendered via renderPresetPicker() -->
+                  </div>
                 </div>
+                
+                <span id="slide-upload-status" class="block text-[9px] font-bold text-emerald-400 uppercase tracking-widest mt-1"></span>
               </div>
             </div>
 
@@ -339,14 +381,19 @@
         <div class="bg-[#0B3D33] border-2 border-[#D8B45A] p-5 rounded-2xl shadow-xl space-y-3 relative overflow-hidden">
           <div class="absolute inset-0 bg-pattern opacity-[0.03] pointer-events-none"></div>
           
-          <button type="button" onclick="triggerResetToDefault()" class="w-full bg-[#031411] hover:bg-[#062B24] border border-red-500/30 hover:border-red-500 text-red-400 font-bold py-2.5 rounded-xl text-xs tracking-widest transition flex items-center justify-center gap-2">
+          <button type="button" onclick="triggerResetToDefault()" class="w-full bg-[#031411] hover:bg-[#062B24] border border-red-500/30 hover:border-red-500 text-red-400 font-bold py-2.5 rounded-xl text-xs tracking-widest transition flex items-center justify-center gap-2 cursor-pointer">
             <i data-lucide="refresh-cw" class="w-4 h-4"></i>
             <span>TETAP SEMULA ASAL</span>
           </button>
           
-          <button type="button" onclick="performSaveSettings()" class="w-full bg-[#D8B45A] hover:bg-[#F2C94C] text-[#062B24] font-black py-3 rounded-xl text-xs tracking-[0.2em] transition flex items-center justify-center gap-2 shadow-lg scale-100 hover:scale-102 transform duration-150">
+          <button type="button" onclick="performSaveSettings()" class="w-full bg-[#D8B45A] hover:bg-[#F2C94C] text-[#062B24] font-black py-3 rounded-xl text-xs tracking-[0.2em] transition flex items-center justify-center gap-2 shadow-lg scale-100 hover:scale-102 transform duration-150 cursor-pointer">
             <i data-lucide="save" class="w-4.5 h-4.5"></i>
-            <span>SIMPAN SEMUA PERUBAHAN</span>
+            <span>SIMPAN SEMUA PERUBAHAN (LOCAL)</span>
+          </button>
+
+          <button id="btn-save-server" type="button" onclick="saveToServerConfig()" class="w-full bg-emerald-700 hover:bg-emerald-600 hover:text-white border border-[#D8B45A]/40 text-[#F8F4E8] font-black py-3 rounded-xl text-xs tracking-[0.2em] transition flex items-center justify-center gap-2 shadow-lg scale-100 hover:scale-102 transform duration-150 cursor-pointer">
+            <i data-lucide="server" class="w-4.5 h-4.5"></i>
+            <span>SIMPAN KEMAS KINI PELAYAN</span>
           </button>
         </div>
 
@@ -822,7 +869,7 @@
       }
     };
 
-    // EXPORT CONFIG FILE BACKUP (DOWNLOAD JSON FILE)
+    // EXPORT CONFIG FILE BACKUP (DOWNLOAD JSON FILE) WITH INSTRUCTION POPUP
     document.getElementById('btn-export').addEventListener('click', () => {
       loadConfig();
       const filename = `tetapan-tv-masjid-${Date.now()}.json`;
@@ -835,6 +882,9 @@
       document.body.appendChild(elem);
       elem.click();
       document.body.removeChild(elem);
+
+      // Trigger beautiful, helpful feedback popup
+      showInstructionModal();
     });
 
     // IMPORT CONFIG JSON BACKUP FILE RESTORATION
@@ -852,6 +902,8 @@
             populateForm();
             renderAnnouncements();
             renderSlides();
+            renderPresetPicker();
+            updateQRPreview();
             lucide.createIcons();
             
             const statusBar = document.getElementById('sync-status');
@@ -869,8 +921,280 @@
       reader.readAsText(file);
     };
 
+    // --- UPLOAD AND SERVER SAVE ENHANCEMENTS ---
+    // Core default preset list
+    const PRESET_IMAGES = [
+      'https://images.unsplash.com/photo-1590075865003-e48277faa558?auto=format&fit=crop&q=80&w=600',
+      'https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&q=80&w=600',
+      'https://images.unsplash.com/photo-1542856391-010fb87dcfed?auto=format&fit=crop&q=80&w=600',
+      'https://images.unsplash.com/photo-1466442929976-97f336a657be?auto=format&fit=crop&q=80&w=600'
+    ];
+
+    // Helper to read file as base64
+    function getBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+      });
+    }
+
+    // Dynamic rendering of presets picker (default + uploaded custom presets)
+    window.renderPresetPicker = function() {
+      const picker = document.getElementById('image-preset-picker');
+      if (!picker) return;
+      const customPresets = appConfig.customPresets || [];
+      const allPresets = [...PRESET_IMAGES, ...customPresets];
+      
+      let html = '';
+      allPresets.forEach(url => {
+        html += `
+          <button type="button" onclick="selectPreset('${url}')" class="outline-none focus:border-[#D8B45A] border-2 border-transparent hover:border-[#D8B45A] rounded overflow-hidden h-12 transition cursor-pointer">
+            <img src="${url}" class="w-full h-full object-cover">
+          </button>
+        `;
+      });
+      picker.innerHTML = html;
+    };
+
+    // Toggle presets section
+    window.setPresetImage = function() {
+      const wrapper = document.getElementById('preset-gallery-wrapper');
+      wrapper.classList.toggle('hidden');
+      renderPresetPicker();
+    };
+
+    window.selectPreset = function(url) {
+      document.getElementById('new-slide-image').value = url;
+      // Close preset gallery
+      document.getElementById('preset-gallery-wrapper').classList.add('hidden');
+    };
+
+    // Upload physical QR code
+    window.uploadQRFile = async function(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const statusEl = document.getElementById('qr-upload-status');
+      statusEl.textContent = 'Memuat naik QR...';
+      statusEl.className = 'text-xs text-[#D8B45A] font-bold mt-1 uppercase animate-pulse';
+
+      try {
+        const base64Data = await getBase64(file);
+        const res = await fetch('/api/upload-qr', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fileName: file.name, fileData: base64Data })
+        });
+
+        if (!res.ok) throw new Error('Upload gagal');
+         const data = await res.json();
+        
+        appConfig.qrImage = data.url;
+        updateQRPreview();
+        
+        statusEl.textContent = 'QR Berjaya Dimuat Naik!';
+        statusEl.className = 'text-xs text-emerald-400 font-bold mt-1 uppercase';
+        showTemporaryStatus('Gambar QR dikemaskini. Muat semula untuk merasai impak!');
+      } catch (err) {
+        statusEl.textContent = 'Upload QR Gagal: ' + err.message;
+        statusEl.className = 'text-xs text-red-400 font-bold mt-1 uppercase';
+      }
+    };
+
+    // Reset QR back to hardcoded SVG vector
+    window.resetQRToDefault = function() {
+      appConfig.qrImage = '';
+      updateQRPreview();
+      const statusEl = document.getElementById('qr-upload-status');
+      statusEl.textContent = 'QR diset semula ke SVG lalai.';
+      statusEl.className = 'text-xs text-amber-500 font-bold mt-1 uppercase';
+    };
+
+    // Update the visual image preview of uploaded QR code
+    window.updateQRPreview = function() {
+      const container = document.getElementById('qr-image-preview-container');
+      const img = document.getElementById('qr-image-preview');
+      const urlText = document.getElementById('qr-image-preview-url');
+
+      if (appConfig.qrImage) {
+        img.src = appConfig.qrImage;
+        urlText.textContent = appConfig.qrImage;
+        container.classList.remove('hidden');
+      } else {
+        container.classList.add('hidden');
+      }
+    };
+
+    // Upload Slide photo
+    window.uploadSlideImage = async function(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const statusEl = document.getElementById('slide-upload-status');
+      statusEl.textContent = 'Memuat naik gambar slaid...';
+      statusEl.className = 'text-xs text-[#D8B45A] font-bold mt-1 uppercase animate-pulse';
+
+      try {
+        const base64Data = await getBase64(file);
+        const res = await fetch('/api/upload-photo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fileName: file.name, fileData: base64Data })
+        });
+
+        if (!res.ok) throw new Error('Upload gagal');
+        const data = await res.json();
+
+        document.getElementById('new-slide-image').value = data.url;
+        statusEl.textContent = 'Kandungan Gambar Berjaya Dimuat Naik!';
+        statusEl.className = 'text-xs text-emerald-400 font-bold mt-1 uppercase';
+      } catch (err) {
+        statusEl.textContent = 'Upload Gagal: ' + err.message;
+        statusEl.className = 'text-xs text-red-400 font-bold mt-1 uppercase';
+      }
+    };
+
+    // Upload a custom background/slide preset image
+    window.uploadPresetImage = async function(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const statusEl = document.getElementById('slide-upload-status');
+      statusEl.textContent = 'Memuat naik preset baru...';
+      statusEl.className = 'text-xs text-[#D8B45A] font-bold mt-1 uppercase animate-pulse';
+
+      try {
+        const base64Data = await getBase64(file);
+        const res = await fetch('/api/upload-photo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fileName: `preset_${Date.now()}_${file.name}`, fileData: base64Data })
+        });
+
+        if (!res.ok) throw new Error('Upload gagal');
+        const data = await res.json();
+
+        if (!appConfig.customPresets) {
+          appConfig.customPresets = [];
+        }
+        appConfig.customPresets.push(data.url);
+        
+        // Render update list and select
+        renderPresetPicker();
+        document.getElementById('new-slide-image').value = data.url;
+
+        statusEl.textContent = 'Preset Ditambah & Terpilih!';
+        statusEl.className = 'text-xs text-emerald-400 font-bold mt-1';
+        showTemporaryStatus('Preset baru ditambah! Klik simpan untuk menetapkan.');
+      } catch (err) {
+        statusEl.textContent = 'Gagal menambah preset: ' + err.message;
+        statusEl.className = 'text-xs text-red-400 font-bold mt-1';
+      }
+    };
+
+    // SAVE SETTINGS OVERRIDE PATH AT SERVER (config.json)
+    window.saveToServerConfig = async function() {
+      const btn = document.getElementById('btn-save-server');
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Menyimpan...`;
+      lucide.createIcons();
+
+      const configPayload = {
+        masjidName: document.getElementById('setup-masjid-name').value.trim() || DEFAULT_CONFIG.masjidName,
+        zoneCode: document.getElementById('setup-zone-code').value.trim() || DEFAULT_CONFIG.zoneCode,
+        qrData: document.getElementById('setup-qr-data').value.trim() || DEFAULT_CONFIG.qrData,
+        qrLabel: document.getElementById('setup-qr-label').value.trim() || DEFAULT_CONFIG.qrLabel,
+        qrDescription: document.getElementById('setup-qr-description').value.trim() || DEFAULT_CONFIG.qrDescription,
+        donationMessage: document.getElementById('setup-donation-message').value.trim() || DEFAULT_CONFIG.donationMessage,
+        slideInterval: Number(document.getElementById('setup-slide-interval').value) || 10,
+        prayerApiUrl: document.getElementById('setup-prayer-api-url').value.trim() || '',
+        announcements: [...appConfig.announcements],
+        slides: [...appConfig.slides],
+        subuhOffset: Number(document.getElementById('setup-offset-subuh').value) || 0,
+        syurukOffset: Number(document.getElementById('setup-offset-syuruk').value) || 0,
+        zohorOffset: Number(document.getElementById('setup-offset-zohor').value) || 0,
+        asarOffset: Number(document.getElementById('setup-offset-asar').value) || 0,
+        maghribOffset: Number(document.getElementById('setup-offset-maghrib').value) || 0,
+        isyakOffset: Number(document.getElementById('setup-offset-isyak').value) || 0,
+        qrImage: appConfig.qrImage || '',
+        customPresets: appConfig.customPresets || []
+      };
+
+      try {
+        const res = await fetch('/api/save-config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(configPayload)
+        });
+
+        if (!res.ok) throw new Error('Gagal menyimpan ke server.');
+
+        // Update LocalStorage too to keep them in sync
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(configPayload));
+        appConfig = configPayload;
+
+        const statusBar = document.getElementById('sync-status');
+        statusBar.textContent = "Status: Berjaya Menggantikan 'config.json' di Pelayan!";
+        statusBar.className = "text-emerald-400 font-bold tracking-wide";
+
+        alert('Berjaya! Pelayan telah dikemaskini dengan konfigurasi baru (config.json telah berjaya ditindih). Sebarang skrin TV aktif akan dikemas kini secara langsung!');
+      } catch (err) {
+        alert('Ralat semasa menulis konfigurasi ke pelayan: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+        lucide.createIcons();
+      }
+    };
+
+    // Popup Instructions Modal controllers
+    window.showInstructionModal = function() {
+      document.getElementById('instruction-modal').classList.remove('hidden');
+    };
+
+    window.closeInstructionModal = function() {
+      document.getElementById('instruction-modal').classList.add('hidden');
+    };
+
     // Running initialization
-    window.addEventListener('DOMContentLoaded', init);
+    window.addEventListener('DOMContentLoaded', async () => {
+      await loadConfig();
+      renderZoneSelector();
+      populateForm();
+      renderAnnouncements();
+      renderSlides();
+      renderPresetPicker();
+      updateQRPreview();
+      lucide.createIcons();
+    });
   </script>
+
+  <!-- Instruction Popup Modal inside mosque-theme -->
+  <div id="instruction-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-[#0B3D33] border-2 border-[#D8B45A] rounded-2xl w-full max-w-md p-6 shadow-2xl relative text-[#F8F4E8] text-center space-y-4">
+      <div class="mx-auto w-12 h-12 rounded-full bg-[#062B24] border border-[#D8B45A]/50 flex items-center justify-center text-[#D8B45A] mb-2 shadow-inner">
+        <i data-lucide="help-circle" class="w-6 h-6"></i>
+      </div>
+      <h3 class="font-extrabold text-base tracking-widest text-[#D8B45A] uppercase">PANDUAN PEMASANGAN</h3>
+      <div class="text-xs text-[#B8C7BE] leading-relaxed uppercase space-y-3 font-semibold">
+        <p>Fail konfigurasi anda telah berjaya dijana & dimuat turun!</p>
+        <p class="text-emerald-400 font-extrabold">Cara Meletakkannya di Pelayan:</p>
+        <ol class="list-decimal list-inside text-left space-y-2 bg-[#031411] p-3 rounded-xl border border-[#D8B45A]/15 font-sans normal-case text-[#F8F4E8]">
+          <li>Salin fail JSON yang dimuat turun tadi.</li>
+          <li>Letakkan ia ke dalam folder <code class="text-[#D8B45A] font-mono bg-emerald-950/80 px-1 py-0.5 rounded text-[10px]">public/</code> di pelayan web anda.</li>
+          <li>Sila namakan semula fail tersebut menjadi: <br><code class="text-[#D8B45A] font-mono bg-emerald-950/80 px-1.5 py-0.5 rounded text-[10px] font-bold">config.json</code></li>
+        </ol>
+        <p class="text-[9px] italic text-[#B8C7BE] mt-2 normal-case leading-normal">Langkah ini membolehkan skrin utama TV Masjid dipaparkan secara lalai tanpa bergantung kepada Local Storage pelayar sahaja!</p>
+      </div>
+      <div class="pt-2">
+        <button type="button" onclick="closeInstructionModal()" class="w-full bg-[#D8B45A] hover:bg-[#F2C94C] text-[#062B24] font-black py-2.5 rounded-xl text-xs tracking-wider transition cursor-pointer">
+          FAHAM & TUTUP
+        </button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
