@@ -940,7 +940,7 @@
           <div class="p-4 space-y-2 flex-grow flex flex-col justify-between">
             <div class="space-y-1">
               <span class="text-[9px] font-bold text-[#D8B45A] tracking-widest uppercase block">${slide.title}</span>
-              <p class="text-xs text-[#F8F4E8] line-clamp-3 leading-relaxed font-serif italic">"${slide.quote}"</p>
+              ${slide.quote ? `<p class="text-xs text-[#F8F4E8] line-clamp-3 leading-relaxed font-serif italic">"${slide.quote}"</p>` : `<span class="text-[9px] text-[#B8C7BE]/55 uppercase font-bold tracking-wider italic block mt-1">Infografik Sahaja (Tiada bertulis)</span>`}
               ${slide.source ? `<p class="text-[10px] text-[#B8C7BE] font-semibold font-sans mt-1">— ${slide.source}</p>` : ''}
             </div>
 
@@ -968,15 +968,15 @@
       const source = document.getElementById('new-slide-source').value.trim();
       const image = document.getElementById('new-slide-image').value.trim();
 
-      if (!title || !quote) {
-        alert('Sila masukkan Tajuk Slaid dan Teks/Mutiara Kata Dakwah sebelum mendaftar.');
+      if (!title) {
+        alert('Sila masukkan sekurang-kurangnya Tajuk Slaid sebelum mendaftar.');
         return;
       }
 
       const newS = {
         id: 'user-slide-' + Date.now(),
         title: title.toUpperCase(),
-        quote: quote,
+        quote: quote || '',
         source: source || undefined,
         imageUrl: image || undefined,
         type: image ? 'media' : 'text'
