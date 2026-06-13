@@ -1,13 +1,1139 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Google AI Studio App</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
+<!DOCTYPE html>
+<html lang="ms" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Masjid Screen - Standalone Smart TV Display</title>
+  
+  <!-- Tailwind CSS Play CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Inter & Playfair Display (Editorial Serif) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;650;700;900&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'Helvetica Neue', 'Arial', 'sans-serif'],
+            serif: ['Playfair Display', 'Georgia', 'serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Premium Mosque TV Screen Custom Animators and Overrides */
+    body {
+      background-color: #062B24;
+      color: #F8F4E8;
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+    }
+
+    /* Seamless marquee looping movement */
+    @keyframes marquee {
+      0% { transform: translate3d(0, 0, 0); }
+      100% { transform: translate3d(-33.333%, 0, 0); }
+    }
+
+    .animate-marquee {
+      display: inline-flex;
+      animation: marquee 35s linear infinite;
+    }
+
+    .animate-marquee:hover {
+      animation-play-state: paused;
+    }
+
+    @keyframes pulse-gold {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(0.97); }
+    }
+
+    .animate-pulse-gold {
+      animation: pulse-gold 3s infinite ease-in-out;
+    }
+
+    /* Elegant custom thin scrollbar for settings */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #062B24;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #D8B45A;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #F2C94C;
+    }
+
+    /* Arabesque background overlay texture class */
+    .bg-pattern {
+      background-image: url('https://www.transparenttextures.com/patterns/arabesque-thin.png');
+    }
+  </style>
+</head>
+<body class="h-full w-full select-none overflow-hidden p-4 flex flex-col justify-between" style="height: 100vh;">
+
+  <!-- TOP SECTION (70vh of height) -->
+  <div id="top-section" class="grid grid-cols-[78fr_22fr] gap-4" style="height: calc(70vh - 24px);">
+    
+    <!-- Info & Dakwah Slideshow Corner (Left) -->
+    <div id="slide-panel" class="relative rounded-2xl bg-[#0B3D33] border-2 border-[rgba(216,180,90,0.55)] shadow-md overflow-hidden flex flex-col justify-between transition-all duration-500">
+      
+      <!-- Category Tag Overlay -->
+      <div class="absolute top-5 left-5 z-20 flex items-center gap-2 bg-[#062B24] border border-[rgba(216,180,90,0.55)] px-4 py-1.5 rounded-md">
+        <i data-lucide="megaphone" class="w-3.5 h-3.5 text-[#D8B45A] animate-pulse"></i>
+        <span id="slide-heading" class="text-[#F8F4E8] font-bold text-xs tracking-[0.25em] uppercase">
+          MUTIARA HADITH
+        </span>
+      </div>
+
+      <!-- Slide Main Area -->
+      <div id="slide-content" class="relative flex-1 w-full h-full overflow-hidden flex flex-col">
+        <!-- Will be dynamically updated by Javascript with transition -->
+      </div>
+
+      <!-- Navigation Pagination Dots -->
+      <div id="slide-dots" class="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 bg-[rgba(6,43,36,0.85)] px-4 py-2 rounded-md border border-[rgba(216,180,90,0.35)]">
+        <!-- Dots injected dynamically -->
+      </div>
+    </div>
+
+    <!-- QR Derma Panel (Right) -->
+    <div class="flex flex-col h-full rounded-2xl bg-[#0B3D33] border-2 border-[rgba(216,180,90,0.55)] shadow-md p-6 text-center justify-between items-center relative">
+      <div class="absolute inset-0 bg-pattern opacity-[0.03] pointer-events-none rounded-2xl"></div>
+
+      <!-- Header -->
+      <div class="flex items-center gap-1.5 justify-center w-full z-10">
+        <i data-lucide="heart-handshake" class="w-4 h-4 text-[#D8B45A] shrink-0"></i>
+        <span id="qr-label-header" class="text-[#F8F4E8] font-bold text-xs tracking-[0.2em] uppercase">QR DERMA MASJID</span>
+      </div>
+
+      <!-- Center Elements -->
+      <div class="flex-1 flex flex-col justify-center items-center w-full my-3 gap-3 z-10">
+        <h3 id="qr-description-text" class="text-[#D8B45A] font-semibold text-xs sm:text-sm tracking-[0.25em] uppercase mb-1">
+          IMBAS UNTUK DERMA
+        </h3>
+
+        <!-- Core QR Container -->
+        <div class="relative p-3.5 bg-white rounded-xl shadow-lg w-44 h-44 sm:w-48 sm:h-48 flex items-center justify-center transform transition duration-500 hover:scale-105 border-2 border-[#D8B45A] group cursor-pointer">
+          <div id="qr-view-box" class="w-full h-full flex items-center justify-center">
+            <!-- Vector SVG QR -->
+            <svg class="w-full h-full text-[#062B24]" viewBox="0 0 100 100" fill="currentColor">
+              <path d="M0,0 h28 v28 h-28 z M4,4 h20 v20 h-20 z M8,8 h12 v12 h-12 z" />
+              <path d="M72,0 h28 v28 h-28 z M76,4 h20 v20 h-20 z M80,8 h12 v12 h-12 z" />
+              <path d="M0,72 h28 v28 h-28 z M4,76 h20 v20 h-20 z M8,80 h12 v12 h-12 z" />
+              <path d="M76,76 h12 v12 h-12 z M80,80 h4 v4 h-4 z" />
+              <path d="M34,2 h4 v4 h-4 z M42,0 h6 v4 h-6 z M54,2 h4 v4 h-4 z M62,0 h4 v6 h-4 z" />
+              <path d="M34,10 h8 v4 h-8 z M46,8 h4 v4 h-4 z M54,10 h6 v4 h-6 z M64,8 h4 v4 h-4 z" />
+              <path d="M34,18 h4 v4 h-4 z M42,16 h8 v4 h-8 z M52,18 h4 v4 h-4 z M60,16 h6 v4 h-6 z" />
+              <path d="M34,24 h6 v4 h-6 z M44,24 h8 v4 h-8 z M56,24 h4 v4 h-4 z M64,24 h4 v4 h-4 z" />
+              <path d="M0,34 h4 v6 h-4 z M8,34 h6 v4 h-6 z M18,34 h8 v4 h-8 z M28,34 h4 v4 h-4 z M34,34 h8 v4 h-8 z M46,34 h8 v4 h-8 z M58,34 h6 v4 h-6 z M68,34 h8 v4 h-8 z M80,34 h6 v4 h-6 z M90,34 h10 v4 h-10 z" />
+              <path d="M4,42 h10 v4 h-10 z M18,42 h4 v4 h-4 z M28,42 h10 v4 h-10 z M42,42 h4 v4 h-4 z M50,42 h8 v4 h-8 z M62,42 h8 v4 h-8 z M74,42 h4 v4 h-4 z M82,42 h10 v4 h-10 z" />
+              <path d="M0,50 h8 v4 h-8 z M14,50 h4 v4 h-4 z M22,50 h6 v4 h-6 z M32,50 h12 v4 h-12 z M48,50 h4 v4 h-4 z M56,50 h10 v4 h-10 z M70,50 h4 v4 h-4 z M78,50 h12 v4 h-12 z M94,50 h6 v4 h-6 z" />
+              <path d="M4,58 h4 v6 h-4 z M14,58 h8 v4 h-8 z M26,58 h6 v4 h-6 z M34,58 h10 v4 h-10 z M48,58 h4 v4 h-8 z M56,58 h6 v4 h-6 z M66,58 h12 v4 h-12 z M82,58 h8 v4 h-8 z M94,58 h4 v4 h-4 z" />
+              <path d="M0,66 h6 v4 h-6 z M12,66 h4 v4 h-4 z M20,66 h12 v4 h-12 z M36,66 h8 v4 h-8 z M48,66 h10 v4 h-10 z M62,66 h8 v4 h-8 z M74,66 h4 v4 h-4 z M82,66 h14 v4 h-14 z" />
+              <path d="M34,74 h6 v4 h-6 z M44,72 h10 v4 h-10 z M58,74 h6 v4 h-6 z M66,72 h4 v4 h-4 z" />
+              <path d="M34,82 h4 v4 h-4 z M40,80 h8 v4 h-8 z M52,82 h6 v4 h-6 z M62,80 h10 v4 h-10 z" />
+              <circle cx="50" cy="50" r="16" fill="#F8F4E8" stroke="#D8B45A" stroke-width="1.5" />
+              <!-- Tiny mosque symbol center -->
+              <path d="M50,42 c-2.5,0 -4,2.5 -4,5 h8 c0,-2.5 -1.5,-5 -4,-5 z M46.5,47 h7 v4 h-7 z M48.5,51 h3 v3 h-3 z" fill="#062B24" />
+            </svg>
+          </div>
+
+          <!-- Scan lines -->
+          <div class="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-[#D8B45A] rounded-tl"></div>
+          <div class="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-[#D8B45A] rounded-tr"></div>
+          <div class="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-[#D8B45A] rounded-bl"></div>
+          <div class="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-[#D8B45A] rounded-br"></div>
+        </div>
+
+        <!-- URL String tag -->
+        <div id="qr-target-string" class="text-[10px] bg-[#062B24] border border-[rgba(216,180,90,0.25)] px-3 py-1 rounded text-[#B8C7BE] font-mono tracking-wider max-w-[90%] truncate">
+          https://jawatankuasa-al-falah.demo
+        </div>
+      </div>
+
+      <!-- Footer message -->
+      <div class="flex items-center gap-1.5 justify-center py-2 border-t border-[rgba(216,180,90,0.15)] w-full z-10 shrink-0">
+        <i data-lucide="heart" class="w-3.5 h-3.5 text-[#D8B45A] fill-[#D8B45A] shrink-0 animate-pulse"></i>
+        <p id="donation-footer-text" class="text-[#B8C7BE] text-xs font-medium leading-heading uppercase tracking-wide truncate max-w-[85%]">
+          Setiap sumbangan pahala berpanjangan.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+
+
+
+  <!-- BOTTOM SECTION (30vh of height) -->
+  <div id="bottom-section" class="flex flex-col gap-3 justify-end" style="height: calc(30vh - 16px);">
+    
+    <!-- Row containing Clock & 6 horizontal Prayer times -->
+    <div class="flex-1 grid grid-cols-[30fr_70fr] gap-4 items-stretch overflow-hidden">
+      
+      <!-- Clock Section (Left) -->
+      <div class="flex flex-col justify-between h-full bg-[#0B3D33] rounded-2xl border-2 border-[rgba(216,180,90,0.55)] p-5 select-none text-[#F8F4E8] shadow-md overflow-hidden relative">
+        <div class="absolute inset-0 bg-pattern opacity-[0.02] pointer-events-none rounded-2xl"></div>
+
+        <!-- Top identity header -->
+        <div class="flex items-start gap-3 z-10">
+          <div class="bg-[#0F4A3D] border border-[rgba(216,180,90,0.55)] p-2 rounded-xl text-[#D8B45A] shadow-inner shrink-0 mt-0.5">
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12,2 C12,2 10.5,5 11,7 C11.5,9 12,9.5 12,9.5 C12,9.5 12.5,9 13,7 C13.5,5 12,2 12,2 Z" />
+              <path d="M6,17 C6,13 12,10 12,10 C12,10 18,13 18,17 C18,17.5 17.5,18 17,18 H7 C6.5,18 6,17.5 6,17 Z" />
+            </svg>
+          </div>
+          <div class="flex flex-col min-w-0">
+            <h2 id="clock-masjid-name" class="text-[#F8F4E8] font-bold text-base sm:text-lg tracking-tight leading-tight uppercase truncate">
+              MASJID CONTOH AL-FALAH
+            </h2>
+            <div class="flex items-center gap-1 text-[#B8C7BE] text-[10px] sm:text-xs font-semibold mt-0.5 uppercase tracking-widest">
+              <i data-lucide="map-pin" class="w-3 h-3 text-[#D8B45A] shrink-0"></i>
+              <span id="clock-zone-name" class="truncate">WLY01 - KUALA LUMPUR</span>
+            </div>
+            <!-- API live/cached status indicator -->
+            <div id="api-status-badge" class="flex items-center gap-1 text-[8px] font-bold mt-1 uppercase tracking-wider bg-emerald-950/65 border border-emerald-500/20 px-1.5 py-0.5 rounded-md text-emerald-400 w-max" title="Mencari sambungan API...">
+              <span id="api-status-text">Hubungan API...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Big clock digital displays -->
+        <div class="my-1.5 select-all flex items-baseline justify-start z-10">
+          <div class="font-sans text-5xl sm:text-6xl md:text-6xl lg:text-7xl font-black tracking-tighter text-[#F8F4E8] flex items-baseline gap-0.5 leading-none tabular-nums">
+            <span id="hours-display" class="text-[#D8B45A]">12</span>
+            <span class="animate-pulse text-[rgba(216,180,90,0.8)] px-0.5">:</span>
+            <span id="minutes-display">34</span>
+            <span class="animate-pulse text-[rgba(216,180,90,0.8)] px-0.5">:</span>
+            <span id="seconds-display" class="text-[#B8C7BE] text-3xl sm:text-4xl font-normal ml-1">56</span>
+          </div>
+        </div>
+
+        <!-- Date row footer -->
+        <div class="border-t border-[rgba(216,180,90,0.15)] pt-3 flex flex-col justify-start gap-1 z-10 shrink-0">
+          <div id="gregorian-date-display" class="text-[#F8F4E8] text-xs sm:text-sm font-semibold tracking-wide uppercase">
+            Jumaat, 24 Oktober 2025
+          </div>
+          <div class="text-[#D8B45A] text-xs font-bold tracking-widest uppercase flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#D8B45A]"></span>
+            <span id="hijri-date-display">2 Rabi' al-Thani 1447H</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Prayer panels (Right) -->
+      <div class="flex-1 h-full bg-[#0B3D33] rounded-2xl border-2 border-[rgba(216,180,90,0.55)] p-4 select-none flex flex-col justify-between shadow-md relative">
+        <div class="absolute inset-0 bg-pattern opacity-[0.02] pointer-events-none rounded-2xl"></div>
+
+        <div id="prayers-grid" class="grid grid-cols-6 h-full items-stretch gap-2 py-0.5 z-10">
+          <!-- Dynamically generated 6 prayer block boxes in pure JS -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Scrolling Announcement Bar Ticker (Footer) -->
+    <div id="ticker-announcement-bar" class="w-full bg-[#0B3D33] border-2 border-[rgba(216,180,90,0.55)] h-[5vh] min-h-[40px] rounded-xl flex items-center overflow-hidden shadow-md relative">
+      <div class="absolute inset-0 bg-pattern opacity-[0.03] pointer-events-none rounded-xl"></div>
+      
+      <!-- static prefix tag -->
+      <div class="bg-[#0F4A3D] border-r border-[rgba(216,180,90,0.35)] px-4 h-full flex items-center gap-2 text-[#D8B45A] font-bold tracking-[0.2em] text-xs z-15 shrink-0 rounded-l-lg">
+        <i data-lucide="volume-2" class="w-4 h-4 text-[#D8B45A] animate-bounce"></i>
+        <span>PENGUMUMAN</span>
+      </div>
+
+      <!-- Marquee sliding track -->
+      <div class="relative flex-1 h-full overflow-hidden flex items-center bg-[#062B24]">
+        <div id="ticker-track" class="whitespace-nowrap flex items-center pl-4 font-semibold text-[#F8F4E8] text-sm md:text-base tracking-wide select-none animate-marquee">
+          <!-- Dynamically populated marquee duplicated triplets -->
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+
+
+
+
+
+  <!-- CONFIG COG CONTROL -->
+  <div class="absolute top-2 right-2 z-40 group">
+    <button id="btn-settings-open" class="opacity-15 group-hover:opacity-100 bg-[#0F4A3D]/80 hover:bg-[#D8B45A] hover:text-[#062B24] border border-[rgba(216,180,90,0.35)] text-[#D8B45A] p-2 rounded-full shadow-lg transition-all duration-300 transform hover:rotate-90">
+      <i data-lucide="settings" class="w-5 h-5"></i>
+    </button>
+  </div>
+
+
+
+
+
+
+  <!-- CONFIGURATION SETTINGS MODAL -->
+  <div id="settings-modal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-[#0B3D33] border-2 border-[#D8B45A] rounded-2xl w-full max-w-3xl max-h-[85vh] overflow-hidden flex flex-col justify-between shadow-2xl text-[#F8F4E8]">
+      
+      <!-- Modal Header -->
+      <div class="border-b border-[rgba(216,180,90,0.3)] p-4 flex items-center justify-between bg-[#062B24]">
+        <div class="flex items-center gap-2">
+          <i data-lucide="sliders" class="w-5 h-5 text-[#D8B45A]"></i>
+          <h3 class="font-extrabold text-sm sm:text-base text-[#F8F4E8] tracking-widest uppercase">
+            KONFIGURASI TV MASJID (TANPA NODE.JS)
+          </h3>
+        </div>
+        <button id="btn-settings-close" class="text-[#B8C7BE] hover:text-[#F8F4E8] transition p-1 bg-[#0B3D33] rounded-lg border border-[rgba(216,180,90,0.1)] hover:bg-[#0F4A3D]">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="flex-1 overflow-y-auto p-6 space-y-6">
+        
+        <!-- Field 1: Basic identity -->
+        <div>
+          <h4 class="text-xs uppercase text-[#D8B45A] font-bold tracking-[0.2em] mb-4 pb-1 border-b border-[rgba(216,180,90,0.15)] flex items-center gap-1.5 font-sans">
+            <i data-lucide="info" class="w-4 h-4 text-[#D8B45A]"></i>
+            <span>Identiti Masjid & Derma</span>
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-[10px] font-bold text-[#B8C7BE] uppercase tracking-wider mb-1">Nama Masjid</label>
+              <input type="text" id="input-masjid-name" class="w-full bg-[#062B24] border border-[rgba(216,180,90,0.35)] rounded-lg px-3 py-2 text-[#F8F4E8] focus:outline-none focus:border-[#D8B45A] text-sm">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-[#B8C7BE] uppercase tracking-wider mb-1">Keterangan Zon</label>
+              <input type="text" id="input-zone-code" class="w-full bg-[#062B24] border border-[rgba(216,180,90,0.35)] rounded-lg px-3 py-2 text-[#F8F4E8] focus:outline-none focus:border-[#D8B45A] text-sm">
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-[10px] font-bold text-[#B8C7BE] uppercase tracking-wider mb-1">Target Pautan QR (Sumbangan)</label>
+              <input type="text" id="input-qr-data" class="w-full bg-[#062B24] border border-[rgba(216,180,90,0.35)] rounded-lg px-3 py-2 text-[#F8F4E8] focus:outline-none focus:border-[#D8B45A] text-sm font-mono">
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-[10px] font-bold text-[#B8C7BE] uppercase tracking-wider mb-1">Mesej Banner Derma</label>
+              <input type="text" id="input-donation-message" class="w-full bg-[#062B24] border border-[rgba(216,180,90,0.35)] rounded-lg px-3 py-2 text-[#F8F4E8] focus:outline-none focus:border-[#D8B45A] text-sm">
+            </div>
+          </div>
+        </div>
+
+        <!-- Field 2: Slide and Announcement -->
+        <div>
+          <h4 class="text-xs uppercase text-[#D8B45A] font-bold tracking-[0.2em] mb-4 pb-1 border-b border-[rgba(216,180,90,0.15)] flex items-center gap-1.5">
+            <i data-lucide="sliders" class="w-4 h-4 text-[#D8B45A]"></i>
+            <span>Selang Slaid & Pengumuman Teks Jemaah</span>
+          </h4>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-[10px] font-bold text-[#B8C7BE] uppercase tracking-wider mb-1">Tempoh Slaid Silih Berganti (Saat)</label>
+              <input type="number" id="input-slide-interval" min="3" max="120" class="w-28 bg-[#062B24] border border-[rgba(216,180,90,0.35)] rounded-lg px-3 py-2 text-[#F8F4E8] focus:outline-none focus:border-[#D8B45A] text-sm">
+            </div>
+            
+            <div>
+              <label class="block text-[10px] font-bold text-[#B8C7BE] uppercase tracking-wider mb-1">Urus Pengumuman Teks Berjalan</label>
+              <div class="flex gap-2 mb-2">
+                <input type="text" id="input-new-announcement" class="flex-1 bg-[#062B24] border border-[rgba(216,180,90,0.35)] rounded-lg px-3 py-2 text-[#F8F4E8] focus:outline-none focus:border-[#D8B45A] text-sm" placeholder="Tambah pengumuman baharu jemaah...">
+                <button type="button" id="btn-add-announcement" class="bg-[#D8B45A] hover:bg-[#F2C94C] text-[#062B24] font-bold px-4 rounded-lg text-xs tracking-wider transition">TAMBAH</button>
+              </div>
+              <div id="settings-announcements-list" class="max-h-32 overflow-y-auto bg-[#062B24] border border-[rgba(216,180,90,0.15)] p-3 rounded-lg space-y-2">
+                <!-- Dynamically listed item rows -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Field 3: Prayer manual offsets -->
+        <div>
+          <h4 class="text-xs uppercase text-[#D8B45A] font-bold tracking-[0.2em] mb-4 pb-1 border-b border-[rgba(216,180,90,0.15)] flex items-center gap-1.5">
+            <i data-lucide="clock" class="w-4 h-4 text-[#D8B45A]"></i>
+            <span>Pelarasan Minit Waktu Solat (+ / - Minit)</span>
+          </h4>
+          <div class="grid grid-cols-3 sm:grid-cols-6 gap-3">
+            <div>
+              <label class="block text-[10px] text-center font-bold text-[#B8C7BE] uppercase tracking-wider mb-1">Subuh</label>
+              <input type="number" id="offset-subuh" class="w-full bg-[#062B24] border border-[rgba(216,180,90,0.35)] rounded-lg text-center py-1.5 text-sm font-semibold font-mono text-[#D8B45A]">
+            </div>
+            <div>
+              <label class="block text-[10px] text-center font-bold text-[#B8C7BE] uppercase tracking-wider mb-1">Syuruk</label>
+              <input type="number" id="offset-syuruk" class="w-full bg-[#062B24] border border-[rgba(216,180,90,0.35)] rounded-lg text-center py-1.5 text-sm font-semibold font-mono text-[#D8B45A]">
+            </div>
+            <div>
+              <label class="block text-[10px] text-center font-bold text-[#B8C7BE] uppercase tracking-wider mb-1">Zohor</label>
+              <input type="number" id="offset-zohor" class="w-full bg-[#062B24] border border-[rgba(216,180,90,0.35)] rounded-lg text-center py-1.5 text-sm font-semibold font-mono text-[#D8B45A]">
+            </div>
+            <div>
+              <label class="block text-[10px] text-center font-bold text-[#B8C7BE] uppercase tracking-wider mb-1">Asar</label>
+              <input type="number" id="offset-asar" class="w-full bg-[#062B24] border border-[rgba(216,180,90,0.35)] rounded-lg text-center py-1.5 text-sm font-semibold font-mono text-[#D8B45A]">
+            </div>
+            <div>
+              <label class="block text-[10px] text-center font-bold text-[#B8C7BE] uppercase tracking-wider mb-1">Maghrib</label>
+              <input type="number" id="offset-maghrib" class="w-full bg-[#062B24] border border-[rgba(216,180,90,0.35)] rounded-lg text-center py-1.5 text-sm font-semibold font-mono text-[#D8B45A]">
+            </div>
+            <div>
+              <label class="block text-[10px] text-center font-bold text-[#B8C7BE] uppercase tracking-wider mb-1">Isyak</label>
+              <input type="number" id="offset-isyak" class="w-full bg-[#062B24] border border-[rgba(216,180,90,0.35)] rounded-lg text-center py-1.5 text-sm font-semibold font-mono text-[#D8B45A]">
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer Buttons -->
+      <div class="border-t border-[rgba(216,180,90,0.3)] p-4 flex gap-3 justify-end bg-[#062B24] rounded-b-2xl">
+        <button type="button" id="btn-settings-reset" class="bg-transparent border border-red-50/20 hover:border-red-500/50 text-red-400 font-semibold px-4 py-2 rounded-xl text-xs sm:text-sm transition flex items-center gap-1.5">
+          <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+          <span>SET SEMULA ASAL</span>
+        </button>
+        <button type="button" id="btn-settings-save" class="bg-[#D8B45A] hover:bg-[#F2C94C] text-[#062B24] font-black px-6 py-2 rounded-xl text-xs sm:text-sm tracking-wider transition flex items-center gap-2 shadow-lg">
+          <i data-lucide="save" class="w-4 h-4"></i>
+          <span>SIMPAN</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+
+
+
+  <!-- CLIENT RUNTIME BUSINESS LOGIC JavaScript (Fully self-contained, offline-compatible) -->
+  <script>
+    // 1. Initial State configurations
+    const DUMMY_SLIDES = [
+      {
+        id: 'slide-1',
+        title: 'INFO & DAKWAH',
+        quote: '"Sesungguhnya yang memakmurkan masjid-masjid Allah hanyalah orang-orang yang beriman kepada Allah dan hari akhirat, mendirikan solat, menunaikan zakat dan tidak takut melainkan kepada Allah..."',
+        source: 'Surah At-Taubah: 18',
+        type: 'text'
+      },
+      {
+        id: 'slide-2',
+        title: 'KULIAH MAGHRIB KHAS',
+        quote: 'Kuliah Tafsir Al-Quran & Adab Ahli Kariah bersama Ustaz Dr. Fauzi Abu Bakar. Dijemput semua muslimin & muslimat hadir bersama keluarga bagi mengimarahkan majlis ilmu.',
+        source: 'Setiap Jumaat (Siri Ke-4)',
+        imageUrl: 'https://images.unsplash.com/photo-1590075865003-e48277faa558?auto=format&fit=crop&q=80&w=1200',
+        type: 'media'
+      },
+      {
+        id: 'slide-3',
+        title: 'TABUNG KEMAKMURAN MASJID',
+        quote: 'Salurkan modal akhirat anda untuk pembangunan prasarana masjid dan pembelian kelengkapan sistem audio baharu demi keselesaan para jemaah.',
+        source: 'Pembangunan Al-Falah',
+        imageUrl: 'https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&q=80&w=1200',
+        type: 'media'
+      },
+      {
+        id: 'slide-4',
+        title: 'MUTIARA HADITH',
+        quote: '"Sesiapa yang membina masjid kerana Allah (walau sekecil mana pun), Allah akan membina baginya sebuah rumah di dalam mahligai Syurga."',
+        source: 'Hadith Riwayat Al-Bukhari & Muslim',
+        imageUrl: 'https://images.unsplash.com/photo-1542856391-010fb87dcfed?auto=format&fit=crop&q=80&w=1200',
+        type: 'media'
+      },
+      {
+        id: 'slide-5',
+        title: 'ADAB DI DALAM MASJID',
+        quote: 'Peliharalah adab ketika berada di rumah Allah. Pastikan telefon bimbit diletakkan dalam mod senyap (silent) sebelum solat bermula demi mengekalkan kekhusyukan ahli jemaah.',
+        source: 'Tuntutan Syarak',
+        type: 'text'
+      }
+    ];
+
+    const DEFAULT_CONFIG = {
+      masjidName: 'MASJID CONTOH AL-FALAH',
+      zoneCode: 'WLY01 - KUALA LUMPUR / PUTRAJAYA',
+      qrData: 'https://payment.example.com/masjid-al-falah',
+      qrLabel: 'QR DERMA MASJID',
+      qrDescription: 'Tabung Pembangunan Prasarana Masjid & Sistem Audio Baru',
+      donationMessage: 'Setiap sumbangan ikhlas anda, pahala berpanjangan di akhirat.',
+      slideInterval: 10,
+      announcements: [
+        'Kuliah Maghrib malam ini selepas solat Maghrib menerangkan Kitab Adab Mualaf.',
+        'Sila letakkan telefon bimbit dalam mod senyap sebelum mula bersolat demi menjaga kekhusyukan.',
+        'Tabung pembangunan masjid dibuka bagi membiayai naik taraf dewan dan dewan utama.',
+        'Jom imarahkan masjid dengan menghadirkan diri ke solat berjemaah setiap waktu.',
+        'Terima kasih atas segala sumbangan ikhlas anda. Semoga Allah melipatgandakan ganjaran.'
+      ],
+      slides: [...DUMMY_SLIDES],
+      subuhOffset: 0,
+      syurukOffset: 0,
+      zohorOffset: 0,
+      asarOffset: 0,
+      maghribOffset: 0,
+      isyakOffset: 0,
+      prayerApiUrl: 'https://api.e-solat.gov.my/index.php?r=esolat/getmain&zone=WLY01&period=today'
+    };
+
+    const LOCAL_STORAGE_KEY = 'standalone_masjid_screen_v1';
+    let appConfig = { ...DEFAULT_CONFIG };
+    let currentSlideIdx = 0;
+    let slideTimer = null;
+    let apiTimes = null;
+
+    // Load configurations from server with local storage fallback
+    async function loadConfig() {
+      appConfig = { ...DEFAULT_CONFIG };
+      
+      // 1. Try to read from active server config
+      try {
+        const res = await fetch('/api/config');
+        if (res.ok) {
+          const serverData = await res.json();
+          appConfig = { ...appConfig, ...serverData };
+        }
+      } catch (e) {
+        console.log('Server config not available or running offline.');
+      }
+
+      // 2. Try to override using browser storage (for fast instant local client feedback)
+      try {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (stored) {
+          appConfig = { ...appConfig, ...JSON.parse(stored) };
+        }
+      } catch (e) {
+        console.error('Failed to load localStorage configuration.', e);
+      }
+
+      // 3. Fallback check for slides array
+      if (!appConfig.slides || appConfig.slides.length === 0) {
+        appConfig.slides = [...DUMMY_SLIDES];
+      }
+    }
+
+    // Save configuration
+    function saveConfig(newConfig) {
+      appConfig = { ...newConfig };
+      try {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appConfig));
+      } catch (e) {
+        console.error('Failed to save configuration to localStorage', e);
+      }
+      applyConfigToUI();
+      renderSlide();
+      initSlideRotation();
+      fetchApiPrayerTimes();
+    }
+
+    // Parse Response from Malaysia e-Solat endpoint
+    function parsePrayerTimesResponse(data) {
+      if (!data) return null;
+      let targetObj = data;
+      if (data.prayerTime && Array.isArray(data.prayerTime) && data.prayerTime.length > 0) {
+        targetObj = data.prayerTime[0];
+      } else if (Array.isArray(data) && data.length > 0) {
+        targetObj = data[0];
+      } else if (data.data && Array.isArray(data.data) && data.data.length > 0) {
+        targetObj = data.data[0];
+        if (targetObj && targetObj.timings) {
+          targetObj = targetObj.timings;
+        }
+      } else if (data.data && typeof data.data === 'object') {
+        targetObj = data.data;
+        if (targetObj.timings) {
+          targetObj = targetObj.timings;
+        }
+      }
+
+      if (typeof targetObj !== 'object' || targetObj === null) {
+        return null;
+      }
+
+      const findValue = (keys) => {
+        for (const key of keys) {
+          if (targetObj[key] !== undefined) return String(targetObj[key]);
+          const lowerKey = key.toLowerCase();
+          const actualKey = Object.keys(targetObj).find(k => k.toLowerCase() === lowerKey);
+          if (actualKey && targetObj[actualKey] !== undefined) {
+            return String(targetObj[actualKey]);
+          }
+        }
+        return null;
+      };
+
+      const subuh = findValue(['subuh', 'fajr']);
+      const syuruk = findValue(['syuruk', 'shuruq', 'sunrise']);
+      const zohor = findValue(['zohor', 'dhuhr', 'noon', 'zuhr']);
+      const asar = findValue(['asar', 'asr']);
+      const maghrib = findValue(['maghrib', 'sunset']);
+      const isyak = findValue(['isyak', 'isha']);
+
+      if (subuh && zohor && asar && maghrib && isyak) {
+        return {
+          subuh,
+          syuruk: syuruk || '07:05',
+          zohor,
+          asar,
+          maghrib,
+          isyak
+        };
+      }
+      return null;
+    }
+
+    // Extract zone code helper
+    function getZoneFromConfig() {
+      const codeMatch = appConfig.zoneCode ? appConfig.zoneCode.match(/([A-Z]{3}\d{2})/i) : null;
+      if (codeMatch) return codeMatch[1].toUpperCase();
+      
+      const urlMatch = appConfig.prayerApiUrl ? appConfig.prayerApiUrl.match(/zone=([A-Z]{3}\d{2})/i) : null;
+      if (urlMatch) return urlMatch[1].toUpperCase();
+      
+      return 'WLY01';
+    }
+
+    // Helper to update the API live/cached status badge in standalone.html
+    function updateApiStatusBadge(source, lastUpdated, zone) {
+      const badge = document.getElementById('api-status-badge');
+      const text = document.getElementById('api-status-text');
+      if (!badge || !text) return;
+      
+      if (source === 'live') {
+        badge.className = "flex items-center gap-1 text-[8px] font-bold mt-1 uppercase tracking-wider bg-emerald-950/65 border border-emerald-500/20 px-1.5 py-0.5 rounded-md text-emerald-400 w-max cursor-default transition-all duration-300";
+        text.innerHTML = `<span class="relative flex h-1.5 w-1.5 mr-0.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span></span> API STATUS: ONLINE (${zone})`;
+        badge.title = `Kemas kini terakhir: ${lastUpdated}`;
+      } else if (source === 'cache') {
+        badge.className = "flex items-center gap-1 text-[8px] font-bold mt-1 uppercase tracking-wider bg-[#2c1d01]/85 border border-amber-500/40 px-1.5 py-0.5 rounded-md text-amber-400 w-max cursor-default transition-all duration-300";
+        text.innerHTML = `<span class="relative flex h-1.5 w-1.5 mr-0.5"><span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-500"></span></span> API STATUS: OFFLINE (${zone})`;
+        badge.title = `Rekod Cache: ${lastUpdated}`;
+      } else {
+        badge.className = "flex items-center gap-1 text-[8px] font-bold mt-1 uppercase tracking-wider bg-red-950/65 border border-red-500/20 px-1.5 py-0.5 rounded-md text-red-500 w-max cursor-default transition-all duration-300";
+        text.innerHTML = `⚠️ API STATUS: ERROR (${zone})`;
+        badge.title = "Menggunakan pengiraan matematik solat tempatan";
+      }
+    }
+
+    // Fetch live prayer times from Malaysia e-Solat via server-side proxy
+    async function fetchApiPrayerTimes() {
+      const zoneCode = getZoneFromConfig();
+      try {
+        const res = await fetch(`/api/prayer-times?zone=${zoneCode}`);
+        if (!res.ok) throw new Error('API server returned error');
+        const json = await res.json();
+        
+        const parsed = parsePrayerTimesResponse(json.data);
+        if (parsed) {
+          apiTimes = parsed;
+          updateApiStatusBadge(json.source, json.lastUpdated, zoneCode);
+        } else {
+          apiTimes = null;
+          updateApiStatusBadge('offline', null, zoneCode);
+        }
+        calculateAndRenderSchedule();
+      } catch (e) {
+        console.warn('API fetch failed or blocked by CORS. Using robust local fallback.', e);
+        apiTimes = null;
+        updateApiStatusBadge('offline', null, zoneCode);
+        calculateAndRenderSchedule();
+      }
+    }
+
+    // Mathematical Standalone accurate Prayer Time Generator based on the day of the year
+    function getPrayerTimes(date) {
+      // Calculate day of the year
+      const start = new Date(date.getFullYear(), 0, 0);
+      const diff = date.getTime() - start.getTime();
+      const oneDay = 1000 * 60 * 60 * 24;
+      const dayOfYear = Math.floor(diff / oneDay);
+
+      // Mild equatorial variances around Kuala Lumpur + 12 mins amplitude
+      const angle = (2 * Math.PI * (dayOfYear - 80)) / 365;
+      const variance = 12 * Math.sin(angle);
+
+      const items = [
+        { name: 'SUBUH', baseMin: 5 * 60 + 44 + variance, offset: appConfig.subuhOffset, id: 'subuh', icon: 'moon-star' },
+        { name: 'SYURUK', baseMin: 7 * 60 + 10 + variance, offset: appConfig.syurukOffset, id: 'syuruk', icon: 'sunrise' },
+        { name: 'ZOHOR', baseMin: 13 * 60 + 15 + variance, offset: appConfig.zohorOffset, id: 'zohor', icon: 'sun' },
+        { name: 'ASAR', baseMin: 16 * 60 + 35 + variance, offset: appConfig.asarOffset, id: 'asar', icon: 'sun-dim' },
+        { name: 'MAGHRIB', baseMin: 19 * 60 + 18 + variance, offset: appConfig.maghribOffset, id: 'maghrib', icon: 'sunset' },
+        { name: 'ISYAK', baseMin: 20 * 60 + 30 + variance, offset: appConfig.isyakOffset, id: 'isyak', icon: 'moon' }
+      ];
+
+      return items.map((p, idx) => {
+        let timeStr = '';
+        if (apiTimes && apiTimes[p.id]) {
+          const rawVal = apiTimes[p.id];
+          if (rawVal.includes(':')) {
+            const parts = rawVal.split(':');
+            if (parts.length >= 2) {
+              const h = parseInt(parts[0], 10);
+              const m = parseInt(parts[1], 10);
+              if (!isNaN(h) && !isNaN(m)) {
+                let totalMin = h * 60 + m + p.offset;
+                if (totalMin < 0) totalMin += 24 * 60;
+                const finalH = Math.floor(totalMin / 60) % 24;
+                const finalM = totalMin % 60;
+                timeStr = `${String(finalH).padStart(2, '0')}:${String(finalM).padStart(2, '0')}`;
+              }
+            }
+          }
+        }
+
+        if (!timeStr) {
+          const totalMinutes = Math.round(p.baseMin + p.offset);
+          const hours = Math.floor(totalMinutes / 60) % 24;
+          const mins = totalMinutes % 60;
+          timeStr = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+        }
+
+        const parts = timeStr.split(':');
+        const hSecs = parseInt(parts[0], 10) * 3600;
+        const mSecs = parseInt(parts[1], 10) * 60;
+
+        return {
+          id: p.id,
+          name: p.name,
+          time: timeStr,
+          totalSeconds: hSecs + mSecs,
+          icon: p.icon
+        };
+      });
+    }
+
+    // Dynamic date formatting in Malay and Hijri
+    function formatMalayDate(date) {
+      const days = ['Ahad', 'Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat', 'Sabtu'];
+      const months = [
+        'Januari', 'Februari', 'Mac', 'April', 'Mei', 'Jun',
+        'Julai', 'Ogos', 'September', 'Oktober', 'November', 'Disember'
+      ];
+      return `${days[date.getDay()]}, ${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+    }
+
+    function formatHijriDate(date) {
+      try {
+        const formatter = new Intl.DateTimeFormat('ms-MY-u-ca-islamic-umalqura', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        });
+        const parts = formatter.formatToParts(date);
+        let day = '', month = '', year = '';
+        parts.forEach(p => {
+          if (p.type === 'day') day = p.value;
+          if (p.type === 'month') month = p.value;
+          if (p.type === 'year') year = p.value;
+        });
+        return `${day} ${month} ${year}H`;
+      } catch (e) {
+        return '2 Rabi\' al-Thani 1447H';
+      }
+    }
+
+    // Calculate Active Clock and Next Prayer Alerts
+    function calculateAndRenderSchedule() {
+      const now = new Date();
+      const currentSecondsMidnight = (now.getHours() * 60 + now.getMinutes()) * 60 + now.getSeconds();
+      const prayers = getPrayerTimes(now);
+
+      // Find the next solat target
+      let target = prayers.find(p => p.totalSeconds > currentSecondsMidnight);
+      if (!target) {
+        target = prayers[0]; // Next morning's Subuh
+      }
+
+      let diffSeconds = target.totalSeconds - currentSecondsMidnight;
+      if (diffSeconds < 0) {
+        diffSeconds += 24 * 60 * 60; // loop to next day
+      }
+
+      const h = Math.floor(diffSeconds / 3600);
+      const m = Math.floor((diffSeconds % 3600) / 60);
+      const s = diffSeconds % 60;
+
+      let nextStr = '';
+      if (h > 0) {
+        nextStr = `SELEPAS ${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+      } else {
+        nextStr = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+      }
+
+      // Render Prayer Columns HTML Grid
+      const gridContainer = document.getElementById('prayers-grid');
+      let html = '';
+
+      prayers.forEach(p => {
+        const isNext = p.id === target.id;
+        if (isNext) {
+          html += `
+            <div class="relative flex flex-col justify-between items-center py-5 px-1.5 rounded-xl transition-all duration-300 overflow-hidden bg-[#D8B45A] text-[#062B24] scale-[1.04] shadow-lg z-10 border border-[#F8F4E8]/20 animate-container">
+              <div class="flex flex-col items-center gap-1.5 w-full text-center">
+                <div class="p-1.5 rounded-full bg-[#062B24] text-[#D8B45A]">
+                  <i data-lucide="${p.icon}" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                </div>
+                <span class="text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase text-[#062B24]">${p.name}</span>
+              </div>
+              <div class="text-center my-2">
+                <span class="text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-extrabold tracking-tighter tabular-nums text-[#062B24]">${p.time}</span>
+              </div>
+              <div class="w-full text-center px-1">
+                <div class="bg-[#062B24] text-[#D8B45A] py-1 px-1.5 rounded text-[8px] sm:text-[10px] font-sans font-bold uppercase tracking-[0.1em] shadow-inner flex items-center justify-center gap-1.5 animate-pulse">
+                  <i data-lucide="bell-ring" class="w-3 h-3 text-[#D8B45A]"></i>
+                  <span>${nextStr}</span>
+                </div>
+                <div class="absolute -top-0.5 left-1/2 -translate-x-1/2 bg-[#062B24] text-[#D8B45A] text-[9px] px-2 py-0.5 rounded-b-md font-bold uppercase tracking-widest leading-none">SETERUSNYA</div>
+              </div>
+            </div>
+          `;
+        } else {
+          html += `
+            <div class="relative flex flex-col justify-between items-center py-5 px-1.5 rounded-xl bg-[#0F4A3D] text-[#F8F4E8] border border-[rgba(216,180,90,0.15)] hover:border-[rgba(216,180,90,0.3)] transition-all">
+              <div class="flex flex-col items-center gap-1.5 w-full text-center">
+                <div class="p-1.5 rounded-full bg-[#0B3D33] text-[#B8C7BE]">
+                  <i data-lucide="${p.icon}" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                </div>
+                <span class="text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase text-[#B8C7BE]">${p.name}</span>
+              </div>
+              <div class="text-center my-2">
+                <span class="text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-extrabold tracking-tighter tabular-nums text-[#F8F4E8]">${p.time}</span>
+              </div>
+              <div class="text-[9px] text-[#B8C7BE] opacity-60 tracking-[0.15em] font-medium font-sans uppercase">Zon WLY01</div>
+            </div>
+          `;
+        }
+      });
+
+      gridContainer.innerHTML = html;
+      lucide.createIcons(); // Instantly update Lucide vector shapes on DOM update
+    }
+
+    // Render single Slideshow Frame state
+    function renderSlide() {
+      const activeSlides = appConfig.slides || DUMMY_SLIDES;
+      const active = activeSlides[currentSlideIdx] || activeSlides[0] || DUMMY_SLIDES[currentSlideIdx] || DUMMY_SLIDES[0];
+      const categoryLabel = document.getElementById('slide-heading');
+      categoryLabel.textContent = active.title;
+
+      const slideContent = document.getElementById('slide-content');
+      
+      // We render either strong media representation or flat dashboard style
+      if (active.type === 'media' && active.imageUrl) {
+        slideContent.innerHTML = `
+          <div class="relative w-full h-full flex flex-col justify-end transition-all duration-500">
+            <img src="${active.imageUrl}" alt="${active.title}" class="absolute inset-0 w-full h-full object-cover select-none brightness-[0.7]" />
+            <div class="absolute inset-0 opacity-10 bg-pattern mix-blend-overlay pointer-events-none"></div>
+            <div class="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-[#062B24] via-[rgba(6,43,36,0.95)] to-transparent z-10 pointer-events-none"></div>
+            
+            <div class="relative z-10 p-10 pb-16 text-center max-w-4xl mx-auto flex flex-col items-center gap-5 justify-end h-full">
+              <span class="text-[#D8B45A] text-xs font-bold tracking-[0.3em] uppercase">HADITH / MUTIARA DAKWAH</span>
+              <p class="text-xl sm:text-2xl md:text-3xl font-serif text-[#F8F4E8] font-light italic leading-relaxed tracking-wide text-shadow-sm max-w-2xl">
+                ${active.quote}
+              </p>
+              ${active.source ? `
+                <div class="text-xs font-bold tracking-[0.2em] text-[#D8B45A] uppercase bg-[#0B3D33]/90 border border-[rgba(216,180,90,0.3)] px-4 py-1.5 rounded-md mt-1">
+                  — ${active.source}
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      } else {
+        slideContent.innerHTML = `
+          <div class="relative flex-1 w-full h-full flex flex-col items-center justify-center p-10 bg-gradient-to-br from-[#0B3D33] via-[#0B3D33] to-[#0F4A3D] transition-all duration-300">
+            <div class="absolute inset-0 opacity-15 bg-pattern pointer-events-none"></div>
+            <div class="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
+              <div class="w-[500px] h-[500px] rounded-full border border-[#D8B45A] flex items-center justify-center">
+                <div class="w-[350px] h-[350px] rounded-full border border-[#D8B45A] flex items-center justify-center">
+                  <div class="w-[200px] h-[200px] rounded-full border border-[#D8B45A]"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="relative z-10 max-w-4xl text-center flex flex-col items-center gap-5">
+              <div class="text-[#D8B45A] text-xs tracking-[0.4em] font-bold uppercase mb-2">MUTIARA ILMU</div>
+              <p class="text-lg sm:text-xl md:text-3xl font-serif text-[#F8F4E8] leading-relaxed tracking-wide font-light max-w-3xl italic">
+                ${active.quote}
+              </p>
+              ${active.source ? `
+                <div class="text-[#B8C7BE] font-bold text-xs uppercase tracking-[0.25em] bg-[#062B24] border border-[rgba(216,180,90,0.2)] px-4 py-1.5 rounded mt-3">
+                  ${active.source}
+                </div>
+              ` : ''}
+              
+              <div class="absolute bottom-4 flex items-center gap-2 text-[#B8C7BE] text-[10px] font-mono uppercase tracking-[0.2em]">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#D8B45A] animate-pulse"></span>
+                <span>Slaid teks aktif</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // Render dots
+      const dotsContainer = document.getElementById('slide-dots');
+      let dotsHtml = '';
+      activeSlides.forEach((_, idx) => {
+        const isActive = idx === currentSlideIdx;
+        dotsHtml += `
+          <button onclick="gotoSlide(${idx})" class="w-2 h-2 rounded-full transition-all duration-300 transform hover:scale-125 focus:outline-none ${
+            isActive ? 'bg-[#D8B45A] scale-110 shadow-[0_0_8px_rgba(216,180,90,0.85)]' : 'bg-[#B8C7BE] opacity-35 hover:opacity-100'
+          }" title="Ke slaid ${idx+1}"></button>
+        `;
+      });
+      dotsContainer.innerHTML = dotsHtml;
+    }
+
+    // Manual slide jump
+    window.gotoSlide = function(index) {
+      currentSlideIdx = index;
+      renderSlide();
+      initSlideRotation(); // reset interval timer
+    };
+
+    // Auto rotate slide
+    function initSlideRotation() {
+      if (slideTimer) clearInterval(slideTimer);
+      const activeSlides = appConfig.slides || DUMMY_SLIDES;
+      slideTimer = setInterval(() => {
+        if (activeSlides.length > 0) {
+          currentSlideIdx = (currentSlideIdx + 1) % activeSlides.length;
+        } else {
+          currentSlideIdx = 0;
+        }
+        renderSlide();
+      }, appConfig.slideInterval * 1000);
+    }
+
+    // Map properties from application state to GUI elements
+    function applyConfigToUI() {
+      document.getElementById('clock-masjid-name').textContent = appConfig.masjidName;
+      document.getElementById('clock-zone-name').textContent = appConfig.zoneCode;
+      document.getElementById('qr-target-string').textContent = appConfig.qrData;
+      document.getElementById('donation-footer-text').textContent = appConfig.donationMessage;
+
+      // Dynamic QR card labels and description
+      const labelHeader = document.getElementById('qr-label-header');
+      if (labelHeader) {
+        labelHeader.textContent = appConfig.qrLabel || 'QR DERMA MASJID';
+      }
+      const descText = document.getElementById('qr-description-text');
+      if (descText) {
+        descText.textContent = appConfig.qrDescription || 'IMBAS UNTUK DERMA';
+      }
+
+      // Render custom QR physical image OR vector SVG QR if empty
+      const qrView = document.getElementById('qr-view-box');
+      if (qrView) {
+        if (appConfig.qrImage) {
+          qrView.innerHTML = `<img src="${appConfig.qrImage}" class="w-full h-full object-contain select-none animate-fade-in" />`;
+        } else {
+          // Put back the original Mosque Vector SVG
+          qrView.innerHTML = `
+            <svg class="w-full h-full text-[#062B24]" viewBox="0 0 100 100" fill="currentColor">
+              <path d="M0,0 h28 v28 h-28 z M4,4 h20 v20 h-20 z M8,8 h12 v12 h-12 z" />
+              <path d="M72,0 h28 v28 h-28 z M76,4 h20 v20 h-20 z M80,8 h12 v12 h-12 z" />
+              <path d="M0,72 h28 v28 h-28 z M4,76 h20 v20 h-20 z M8,80 h12 v12 h-12 z" />
+              <path d="M76,76 h12 v12 h-12 z M80,80 h4 v4 h-4 z" />
+              <path d="M34,2 h4 v4 h-4 z M42,0 h6 v4 h-6 z M54,2 h4 v4 h-4 z M62,0 h4 v6 h-4 z" />
+              <path d="M34,10 h8 v4 h-8 z M46,8 h4 v4 h-4 z M54,10 h6 v4 h-6 z M64,8 h4 v4 h-4 z" />
+              <path d="M34,18 h4 v4 h-4 z M42,16 h8 v4 h-8 z M52,18 h4 v4 h-4 z M60,16 h6 v4 h-6 z" />
+              <path d="M34,24 h6 v4 h-6 z M44,24 h8 v4 h-8 z M56,24 h4 v4 h-4 z M64,24 h4 v4 h-4 z" />
+              <path d="M0,34 h4 v6 h-4 z M8,34 h6 v4 h-6 z M18,34 h8 v4 h-8 z M28,34 h4 v4 h-4 z M34,34 h8 v4 h-8 z M46,34 h8 v4 h-8 z M58,34 h6 v4 h-6 z M68,34 h8 v4 h-8 z M80,34 h6 v4 h-6 z M90,34 h10 v4 h-10 z" />
+              <path d="M4,42 h10 v4 h-10 z M18,42 h4 v4 h-4 z M28,42 h10 v4 h-10 z M42,42 h4 v4 h-4 z M50,42 h8 v4 h-8 z M62,42 h8 v4 h-8 z M74,42 h4 v4 h-4 z M82,42 h10 v4 h-10 z" />
+              <path d="M0,50 h8 v4 h-8 z M14,50 h4 v4 h-4 z M22,50 h6 v4 h-6 z M32,50 h12 v4 h-12 z M48,50 h4 v4 h-4 z M56,50 h10 v4 h-10 z M70,50 h4 v4 h-4 z M78,50 h12 v4 h-12 z M94,50 h6 v4 h-6 z" />
+              <path d="M4,58 h4 v6 h-4 z M14,58 h8 v4 h-8 z M26,58 h6 v4 h-6 z M34,58 h10 v4 h-10 z M48,58 h4 v4 h-8 z M56,58 h6 v4 h-6 z M66,58 h12 v4 h-12 z M82,58 h8 v4 h-8 z M94,58 h4 v4 h-4 z" />
+              <path d="M0,66 h6 v4 h-6 z M12,66 h4 v4 h-4 z M20,66 h12 v4 h-12 z M36,66 h8 v4 h-8 z M48,66 h10 v4 h-10 z M62,66 h8 v4 h-8 z M74,66 h4 v4 h-4 z M82,66 h14 v4 h-14 z" />
+              <path d="M34,74 h6 v4 h-6 z M44,72 h10 v4 h-10 z M58,74 h6 v4 h-6 z M66,72 h4 v4 h-4 z" />
+              <path d="M34,82 h4 v4 h-4 z M40,80 h8 v4 h-8 z M52,82 h6 v4 h-6 z M62,80 h10 v4 h-10 z" />
+              <circle cx="50" cy="50" r="16" fill="#F8F4E8" stroke="#D8B45A" stroke-width="1.5" />
+              <path d="M50,42 c-2.5,0 -4,2.5 -4,5 h8 c0,-2.5 -1.5,-5 -4,-5 z M46.5,47 h7 v4 h-7 z M48.5,51 h3 v3 h-3 z" fill="#062B24" />
+            </svg>
+          `;
+        }
+      }
+
+      // Populate looping Ticker text with absolute clean spacing
+      const tickerTrack = document.getElementById('ticker-track');
+      const joined = appConfig.announcements.join('   ✦   ');
+      const tripled = `${joined}   ✦   ${joined}   ✦   ${joined}`;
+      tickerTrack.textContent = tripled;
+    }
+
+    // Update real-time Clock ticking (runs every single second)
+    function tickClock() {
+      const now = new Date();
+      
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+
+      document.getElementById('hours-display').textContent = hours;
+      document.getElementById('minutes-display').textContent = minutes;
+      document.getElementById('seconds-display').textContent = seconds;
+
+      document.getElementById('gregorian-date-display').textContent = formatMalayDate(now);
+      document.getElementById('hijri-date-display').textContent = formatHijriDate(now);
+
+      // Re-trigger countdown and schedules rendering dynamically every second
+      calculateAndRenderSchedule();
+    }
+
+
+    // 2. MODAL SETTINGS EVENT HANDLERS
+    const settingsModal = document.getElementById('settings-modal');
+    const btnOpenSettings = document.getElementById('btn-settings-open');
+    const btnCloseSettings = document.getElementById('btn-settings-close');
+    const btnSaveSettings = document.getElementById('btn-settings-save');
+    const btnResetSettings = document.getElementById('btn-settings-reset');
+    const btnAddAnnouncement = document.getElementById('btn-add-announcement');
+    const inputNewAnnouncement = document.getElementById('input-new-announcement');
+    const containerAnnouncementsList = document.getElementById('settings-announcements-list');
+
+    let localAnnouncements = [];
+
+    // Open Modal Settings panel
+    btnOpenSettings.addEventListener('click', () => {
+      loadConfig();
+      // Populate basic inputs
+      document.getElementById('input-masjid-name').value = appConfig.masjidName;
+      document.getElementById('input-zone-code').value = appConfig.zoneCode;
+      document.getElementById('input-qr-data').value = appConfig.qrData;
+      document.getElementById('input-donation-message').value = appConfig.donationMessage;
+      document.getElementById('input-slide-interval').value = appConfig.slideInterval;
+
+      // Populate offsets
+      document.getElementById('offset-subuh').value = appConfig.subuhOffset;
+      document.getElementById('offset-syuruk').value = appConfig.syurukOffset;
+      document.getElementById('offset-zohor').value = appConfig.zohorOffset;
+      document.getElementById('offset-asar').value = appConfig.asarOffset;
+      document.getElementById('offset-maghrib').value = appConfig.maghribOffset;
+      document.getElementById('offset-isyak').value = appConfig.isyakOffset;
+
+      // Populate Announcements array
+      localAnnouncements = [...appConfig.announcements];
+      renderLocalAnnouncementsInModal();
+
+      settingsModal.classList.remove('hidden');
+    });
+
+    // Close Modal Settings
+    btnCloseSettings.addEventListener('click', () => {
+      settingsModal.classList.add('hidden');
+    });
+
+    // Render announcements rows inside config modal
+    function renderLocalAnnouncementsInModal() {
+      containerAnnouncementsList.innerHTML = '';
+      if (localAnnouncements.length === 0) {
+        containerAnnouncementsList.innerHTML = `
+          <div class="text-center py-4 text-xs text-[#B8C7BE] italic">Tiada sebarang pengumuman. Sila tambahkan.</div>
+        `;
+        return;
+      }
+      localAnnouncements.forEach((text, index) => {
+        const row = document.createElement('div');
+        row.className = "flex justify-between items-center bg-[#0B3D33] p-2 rounded border border-[rgba(216,180,90,0.1)] gap-2";
+        row.innerHTML = `
+          <span class="text-xs text-[#F8F4E8] truncate max-w-[85%]">${text}</span>
+          <button type="button" onclick="deleteLocalAnnouncement(${index})" class="text-red-400 hover:text-red-300 transition" title="Padam">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
+        `;
+        containerAnnouncementsList.appendChild(row);
+      });
+      lucide.createIcons();
+    }
+
+    // Delete static announcements item inside modal state
+    window.deleteLocalAnnouncement = function(index) {
+      localAnnouncements.splice(index, 1);
+      renderLocalAnnouncementsInModal();
+    };
+
+    // Add new announcement
+    btnAddAnnouncement.addEventListener('click', () => {
+      const text = inputNewAnnouncement.value.trim();
+      if (text) {
+        localAnnouncements.push(text);
+        inputNewAnnouncement.value = '';
+        renderLocalAnnouncementsInModal();
+      }
+    });
+
+    inputNewAnnouncement.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        btnAddAnnouncement.click();
+      }
+    });
+
+    // Reset settings
+    btnResetSettings.addEventListener('click', () => {
+      if (confirm('Adakah anda pasti mahu menetapkan semula koordinat dan selang masa waktu solat ke nilai asal?')) {
+        localStorage.removeItem(LOCAL_STORAGE_KEY);
+        appConfig = { ...DEFAULT_CONFIG };
+        settingsModal.classList.add('hidden');
+        applyConfigToUI();
+        renderSlide();
+        initSlideRotation();
+        calculateAndRenderSchedule();
+      }
+    });
+
+    // Save final inputs
+    btnSaveSettings.addEventListener('click', () => {
+      const newConfig = {
+        ...appConfig,
+        masjidName: document.getElementById('input-masjid-name').value.trim() || DEFAULT_CONFIG.masjidName,
+        zoneCode: document.getElementById('input-zone-code').value.trim() || DEFAULT_CONFIG.zoneCode,
+        qrData: document.getElementById('input-qr-data').value.trim() || DEFAULT_CONFIG.qrData,
+        donationMessage: document.getElementById('input-donation-message').value.trim() || DEFAULT_CONFIG.donationMessage,
+        slideInterval: Number(document.getElementById('input-slide-interval').value) || 10,
+        announcements: localAnnouncements,
+        subuhOffset: Number(document.getElementById('offset-subuh').value) || 0,
+        syurukOffset: Number(document.getElementById('offset-syuruk').value) || 0,
+        zohorOffset: Number(document.getElementById('offset-zohor').value) || 0,
+        asarOffset: Number(document.getElementById('offset-asar').value) || 0,
+        maghribOffset: Number(document.getElementById('offset-maghrib').value) || 0,
+        isyakOffset: Number(document.getElementById('offset-isyak').value) || 0
+      };
+
+      saveConfig(newConfig);
+      settingsModal.classList.add('hidden');
+    });
+
+
+    // 3. RUNTIME INITIALIZATION
+    async function startStandalone() {
+      await loadConfig();
+      applyConfigToUI();
+      renderSlide();
+      initSlideRotation();
+      await fetchApiPrayerTimes();
+      tickClock();
+    }
+    startStandalone();
+    
+    // Listen for storage events from settings.html for INSTANT real-time sync!
+    window.addEventListener('storage', async (e) => {
+      if (e.key === LOCAL_STORAGE_KEY) {
+        await loadConfig();
+        applyConfigToUI();
+        renderSlide();
+        initSlideRotation();
+        await fetchApiPrayerTimes();
+      }
+    });
+    
+    // Core dynamic clock ticking scheduler, running once per second
+    setInterval(tickClock, 1000);
+
+    // Initial lucide renderer for layouts
+    lucide.createIcons();
+  </script>
+</body>
+</html>

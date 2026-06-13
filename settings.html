@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kawalan Sistem TV Masjid - Standalone Setup</title>
+  <title>KONFIGURASI MASJID INFO TV</title>
   
   <!-- Tailwind CSS Play CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -70,7 +70,7 @@
         </div>
         <div>
           <h1 class="text-xl md:text-2xl font-black tracking-widest text-[#F8F4E8] uppercase flex items-center gap-2">
-            KONFIGURASI TV MASJID
+            KONFIGURASI MASJID INFO TV
           </h1>
           <p class="text-[#B8C7BE] text-xs font-semibold tracking-wider mt-0.5 uppercase">
             Halaman Standalone &bull; Bersambung menerusi Local Storage
@@ -79,7 +79,7 @@
       </div>
 
       <div class="flex flex-wrap gap-2.5 z-10">
-        <a href="standalone.html" target="_blank" class="bg-[#D8B45A] hover:bg-[#F2C94C] text-[#062B24] px-4 py-2.5 rounded-xl text-xs font-black tracking-widest transition flex items-center gap-2 shadow-lg">
+        <a href="/" target="_blank" class="bg-[#D8B45A] hover:bg-[#F2C94C] text-[#062B24] px-4 py-2.5 rounded-xl text-xs font-black tracking-widest transition flex items-center gap-2 shadow-lg">
           <i data-lucide="external-link" class="w-4 h-4"></i>
           <span>BUKA SKRIN UTAMA</span>
         </a>
@@ -335,6 +335,41 @@
               <input type="text" id="setup-prayer-api-url" class="w-full bg-[#062B24] border border-[#D8B45A]/35 rounded-xl px-4 py-3 text-[#F8F4E8] focus:outline-none focus:border-[#D8B45A] text-xs font-mono">
               <p class="text-[9px] text-[#B8C7BE] leading-normal uppercase">Alat paparan standalone akan memproses format json daripada pelayan rasmi JAKIM Malaysia ini.</p>
             </div>
+
+            <!-- Real-time API Connection & Cache Status info -->
+            <div class="bg-[#031411] border border-[#D8B45A]/20 rounded-xl p-3.5 space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-[9px] font-extrabold text-[#B8C7BE] uppercase tracking-wider flex items-center gap-2">
+                  <span class="relative flex h-2 w-2">
+                    <span id="api-indicator-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span id="api-indicator-dot" class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                  <span>STATUS HUBUNGAN API</span>
+                </span>
+                <span id="api-status-badge-text" class="text-[8px] font-black tracking-widest text-[#D8B45A] bg-[#062B24] border border-[#D8B45A]/30 px-2 py-0.5 rounded uppercase">LIVE</span>
+              </div>
+              
+              <div class="space-y-1.5 text-[10px] text-[#F8F4E8]/85 uppercase">
+                <div class="flex justify-between border-b border-[#D8B45A]/10 pb-1 font-mono">
+                  <span class="text-[#B8C7BE] font-sans">HUBUNGAN:</span>
+                  <span id="status-conn-type" class="font-bold text-emerald-400">BERSAMBUNG TERUS (LIVE)</span>
+                </div>
+                <div class="flex justify-between border-b border-[#D8B45A]/10 pb-1 font-mono">
+                  <span class="text-[#B8C7BE] font-sans">KEMAS KINI REKOD:</span>
+                  <span id="status-last-updated" class="font-bold text-emerald-300">-</span>
+                </div>
+                <div class="flex justify-between font-mono">
+                  <span class="text-[#B8C7BE] font-sans">LOKASI AKTIF:</span>
+                  <span id="status-location-name" class="font-bold text-[#D8B45A] truncate max-w-[160px] text-right">-</span>
+                </div>
+              </div>
+
+              <!-- Force Refresh Button -->
+              <button type="button" onclick="forceFetchLatestSolatTimes()" class="w-full bg-[#0F4A3D] hover:bg-[#062B24] border border-[#D8B45A]/35 text-[10px] py-2 rounded-xl text-[#D8B45A] font-black tracking-widest transition flex items-center justify-center gap-1.5 shadow cursor-pointer">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5" id="btn-refresh-icon"></i>
+                <span>MUAT TURUN DATA API TERKINI</span>
+              </button>
+            </div>
           </div>
         </section>
 
@@ -541,7 +576,113 @@
       renderAnnouncements();
       renderSlides();
       lucide.createIcons();
+      window.updatePrayerApiStatus(false);
     }
+
+    window.getZoneFromConfigForApi = function() {
+      const selector = document.getElementById('setup-zone-selector');
+      if (selector && selector.value) {
+        return selector.value;
+      }
+      const zoneInputVal = document.getElementById('setup-zone-code').value || appConfig.zoneCode || '';
+      const match = zoneInputVal.match(/([A-Z]{3}\d{2})/i);
+      if (match) {
+        return match[1].toUpperCase();
+      }
+      const urlInputVal = document.getElementById('setup-prayer-api-url').value || appConfig.prayerApiUrl || '';
+      const urlMatch = urlInputVal.match(/zone=([A-Z]{3}\d{2})/i);
+      if (urlMatch) {
+        return urlMatch[1].toUpperCase();
+      }
+      return 'WLY01';
+    };
+
+    window.updatePrayerApiStatus = async function(force = false) {
+      const zone = window.getZoneFromConfigForApi();
+      const btnRefresh = document.getElementById('btn-refresh-icon');
+      if (btnRefresh && force) {
+        btnRefresh.classList.add('animate-spin');
+      }
+
+      try {
+        const res = await fetch(`/api/prayer-times?zone=${zone}&force=${force}`);
+        if (!res.ok) throw new Error('Pelayan mengembalikan ralat');
+        const json = await res.json();
+        
+        const isLive = json.source === "live";
+        const connTypeEl = document.getElementById('status-conn-type');
+        const lastUpdatedEl = document.getElementById('status-last-updated');
+        const locNameEl = document.getElementById('status-location-name');
+        const statusBadgeEl = document.getElementById('api-status-badge-text');
+        const indicatorDot = document.getElementById('api-indicator-dot');
+        const indicatorPing = document.getElementById('api-indicator-ping');
+
+        if (connTypeEl) {
+          if (isLive) {
+            connTypeEl.textContent = "BERSAMBUNG TERUS (LIVE)";
+            connTypeEl.className = "font-bold text-emerald-400";
+            if (indicatorDot) indicatorDot.className = "relative inline-flex rounded-full h-2 w-2 bg-emerald-500";
+            if (indicatorPing) indicatorPing.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75";
+          } else {
+            connTypeEl.textContent = "MENGGUNAKAN MEMORI CACHE (LOCAL CACHE)";
+            connTypeEl.className = "font-bold text-amber-400";
+            if (indicatorDot) indicatorDot.className = "relative inline-flex rounded-full h-2 w-2 bg-amber-500";
+            if (indicatorPing) indicatorPing.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75";
+          }
+        }
+
+        if (lastUpdatedEl) {
+          lastUpdatedEl.textContent = json.lastUpdated || "-";
+        }
+
+        if (locNameEl) {
+          const zoneObj = COMPREHENSIVE_MALAYSIAN_ZONES.find(z => z.code === zone);
+          locNameEl.textContent = zoneObj ? zoneObj.name : zone;
+          locNameEl.title = zoneObj ? zoneObj.name : zone;
+        }
+
+        if (statusBadgeEl) {
+          statusBadgeEl.textContent = (json.source || "LIVE").toUpperCase();
+          if (isLive) {
+            statusBadgeEl.className = "text-[8px] font-black tracking-widest text-[#062B24] bg-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded uppercase font-bold";
+          } else {
+            statusBadgeEl.className = "text-[8px] font-black tracking-widest text-[#062B24] bg-amber-400 border border-amber-500/20 px-2 py-0.5 rounded uppercase font-bold";
+          }
+        }
+
+      } catch (e) {
+        console.error("Gagal mengemaskini status API solat:", e);
+        const connTypeEl = document.getElementById('status-conn-type');
+        if (connTypeEl) {
+          connTypeEl.textContent = "RALAT HUBUNGAN (OFFLINE)";
+          connTypeEl.className = "font-bold text-red-400";
+        }
+      } finally {
+        if (btnRefresh) {
+          btnRefresh.classList.remove('animate-spin');
+        }
+      }
+    };
+
+    window.forceFetchLatestSolatTimes = async function() {
+      const statusBar = document.getElementById('sync-status');
+      if (statusBar) {
+        statusBar.textContent = "Sedang menghubungi server JAKIM untuk memuat turun data terkini...";
+        statusBar.className = "text-[#D8B45A] font-bold tracking-wide animate-pulse";
+      }
+      await window.updatePrayerApiStatus(true);
+      if (statusBar) {
+        statusBar.textContent = "Status: Data API Berjaya Dimuat Turun Terkini!";
+        statusBar.className = "text-emerald-400 font-bold tracking-wide";
+      }
+      
+      const syncCheck = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (syncCheck) {
+        const parsed = JSON.parse(syncCheck);
+        parsed.lastCacheFetchTime = Date.now();
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(parsed));
+      }
+    };
 
     // Load setup data
     function loadConfig() {
@@ -607,6 +748,7 @@
       if (zoneObj) {
         document.getElementById('setup-zone-code').value = zoneObj.name;
         document.getElementById('setup-prayer-api-url').value = `https://api.e-solat.gov.my/index.php?r=esolat/getmain&zone=${zoneCode}&period=today`;
+        window.updatePrayerApiStatus(false);
       }
     };
 
@@ -863,7 +1005,7 @@
         statusBar.textContent = "Status: Semua Naiktaraf Disimpan!";
         statusBar.className = "text-emerald-400 font-bold tracking-wide";
         
-        alert('Heibat! Tetapan sistem masjid anda telah disimpan ke LocalStorage. Sebarang tab skrin TV yang terbuka dengan fail standalone.html akan dipaparkan secara langsung tanpa perlu dimuat semula!');
+        alert('Hebat! Tetapan sistem masjid anda telah disimpan ke LocalStorage. Sebarang tab skrin TV yang terbuka dengan alamat utama akan dipaparkan secara langsung tanpa perlu dimuat semula!');
       } catch (e) {
         alert('Ralat: Berlaku kegagalan semasa menyimpan data anda ke pelayar web. Sila semak semula storage anda.');
       }

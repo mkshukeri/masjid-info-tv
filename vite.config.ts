@@ -10,7 +10,6 @@ export default defineConfig(() => {
       rollupOptions: {
         input: {
           main: path.resolve(__dirname, 'index.html'),
-          standalone: path.resolve(__dirname, 'standalone.html'),
           settings: path.resolve(__dirname, 'settings.html'),
         }
       }

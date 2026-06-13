@@ -1,6 +1,7 @@
 import express from "express";
 import path from "path";
 import fs from "fs";
+import https from "https";
 import { createServer as createViteServer } from "vite";
 
 async function startServer() {
@@ -25,6 +26,123 @@ async function startServer() {
   if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
   }
+
+  // API endpoint - Proxy e-Solat for CORS-free and resilient caching behavior
+  app.get("/api/prayer-times", (req, res) => {
+    const zone = ((req.query.zone as string) || "WLY01").toUpperCase().trim();
+    const force = req.query.force === "true";
+    const cachePath = path.join(publicDir, `prayer_cache_${zone}.json`);
+    const url = `https://api.e-solat.gov.my/index.php?r=esolat/getmain&zone=${zone}&period=today`;
+
+    const getExistingCache = () => {
+      if (fs.existsSync(cachePath)) {
+        try {
+          const raw = fs.readFileSync(cachePath, "utf-8");
+          const cachedJson = JSON.parse(raw);
+          return {
+            source: "cache",
+            lastUpdated: cachedJson.lastUpdated || "Sebelum ini",
+            zone: zone,
+            data: cachedJson.data
+          };
+        } catch (e) {
+          return null;
+        }
+      }
+      return null;
+    };
+
+    // If cache of today or within last 4 hours exists, and force is false, return it instantly!
+    if (!force && fs.existsSync(cachePath)) {
+      try {
+        const stats = fs.statSync(cachePath);
+        const ageMs = Date.now() - stats.mtimeMs;
+        // 4 hours cache validation
+        if (ageMs < 4 * 60 * 60 * 1000) {
+          const cache = getExistingCache();
+          if (cache) {
+            return res.json(cache);
+          }
+        }
+      } catch (err) {}
+    }
+
+    // Try live fetch
+    const parsedUrl = new URL(url);
+    const options = {
+      hostname: parsedUrl.hostname,
+      path: parsedUrl.pathname + parsedUrl.search,
+      method: "GET",
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/ 537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "application/json, text/plain, */*",
+        "Cache-Control": "no-cache"
+      },
+      timeout: 10000,
+      rejectUnauthorized: false
+    };
+
+    const request = https.get(options, (apiRes) => {
+      // If server returns error status, fall back to local cache if available
+      if (apiRes.statusCode !== 200) {
+        const cache = getExistingCache();
+        if (cache) {
+          return res.json(cache);
+        }
+        return res.status(apiRes.statusCode || 502).json({ 
+          error: `Server JAKIM mengembalikan status kod ralat: ${apiRes.statusCode}` 
+        });
+      }
+
+      let dataStr = "";
+      apiRes.on("data", (chunk) => { dataStr += chunk; });
+      apiRes.on("end", () => {
+        try {
+          const parsed = JSON.parse(dataStr);
+          if (parsed && (parsed.prayerTime || parsed.status === "OK")) {
+            // Save to cache
+            const lastUpdated = new Date().toLocaleString("ms-MY", { timeZone: "Asia/Kuala_Lumpur" });
+            const cacheObj = {
+              lastUpdated,
+              data: parsed
+            };
+            fs.writeFileSync(cachePath, JSON.stringify(cacheObj, null, 2), "utf-8");
+            return res.json({
+              source: "live",
+              lastUpdated,
+              zone: zone,
+              data: parsed
+            });
+          } else {
+            throw new Error("Siri data tidak lengkap atau ralat daripada server JAKIM");
+          }
+        } catch (err: any) {
+          const cache = getExistingCache();
+          if (cache) {
+            return res.json(cache);
+          }
+          return res.status(502).json({ error: "Gagal memproses data ralat JAKIM dan tiada cache sedia ada.", details: err.message });
+        }
+      });
+    });
+
+    request.on("error", (err) => {
+      const cache = getExistingCache();
+      if (cache) {
+        return res.json(cache);
+      }
+      return res.status(502).json({ error: "Gagal menyambung ke server JAKIM dan tiada cache sedia ada.", details: err.message });
+    });
+
+    request.on("timeout", () => {
+      request.destroy();
+      const cache = getExistingCache();
+      if (cache) {
+        return res.json(cache);
+      }
+      return res.status(504).json({ error: "Masa tamat berhubung ke server JAKIM (Timeout) dan tiada cache sedia ada." });
+    });
+  });
 
   // API end points - Fetch current server configuration
   app.get("/api/config", (req, res) => {
@@ -128,9 +246,9 @@ async function startServer() {
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
     
-    // Explicit static file paths for multi-page routing
+    // Redirect old standalone.html requests to primary root /
     app.get("/standalone.html", (req, res) => {
-      res.sendFile(path.join(distPath, "standalone.html"));
+      res.redirect(301, "/");
     });
     app.get("/settings.html", (req, res) => {
       res.sendFile(path.join(distPath, "settings.html"));
