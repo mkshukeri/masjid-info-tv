@@ -604,35 +604,58 @@
         btnRefresh.classList.add('animate-spin');
       }
 
+      let dataFetched = null;
+      let sourceFetched = "live";
+      let lastUpdatedStr = "";
+
       try {
         const res = await fetch(`/api/prayer-times?zone=${zone}&force=${force}`);
         if (!res.ok) throw new Error('Pelayan mengembalikan ralat');
         const json = await res.json();
-        
-        const isLive = json.source === "live";
-        const connTypeEl = document.getElementById('status-conn-type');
-        const lastUpdatedEl = document.getElementById('status-last-updated');
-        const locNameEl = document.getElementById('status-location-name');
-        const statusBadgeEl = document.getElementById('api-status-badge-text');
-        const indicatorDot = document.getElementById('api-indicator-dot');
-        const indicatorPing = document.getElementById('api-indicator-ping');
+        if (json.error || !json.data) {
+          throw new Error(json.error || 'Server returned invalid proxy data');
+        }
+        dataFetched = json.data;
+        sourceFetched = json.source;
+        lastUpdatedStr = json.lastUpdated || "";
+      } catch (e) {
+        console.warn("Server-side proxy fetch failed, attempting direct browser access to JAKIM API:", e);
+        try {
+          const directRes = await fetch(`https://api.e-solat.gov.my/index.php?r=esolat/getmain&zone=${zone}&period=today`);
+          if (!directRes.ok) throw new Error('Direct e-Solat API returned error status');
+          dataFetched = await directRes.json();
+          sourceFetched = "live";
+          lastUpdatedStr = new Date().toLocaleString("ms-MY", { timeZone: "Asia/Kuala_Lumpur" });
+        } catch (directErr) {
+          console.error("Direct browser fetch also failed:", directErr);
+        }
+      }
 
+      const connTypeEl = document.getElementById('status-conn-type');
+      const lastUpdatedEl = document.getElementById('status-last-updated');
+      const locNameEl = document.getElementById('status-location-name');
+      const statusBadgeEl = document.getElementById('api-status-badge-text');
+      const indicatorDot = document.getElementById('api-indicator-dot');
+      const indicatorPing = document.getElementById('api-indicator-ping');
+
+      if (dataFetched) {
+        const isLive = sourceFetched === "live";
         if (connTypeEl) {
           if (isLive) {
-            connTypeEl.textContent = "BERSAMBUNG TERUS (LIVE)";
-            connTypeEl.className = "font-bold text-emerald-400";
+            connTypeEl.textContent = "BERSAMBUNG TERUS (LIVE/DIRECT)";
+            connTypeEl.className = "font-bold text-emerald-400 font-mono";
             if (indicatorDot) indicatorDot.className = "relative inline-flex rounded-full h-2 w-2 bg-emerald-500";
             if (indicatorPing) indicatorPing.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75";
           } else {
             connTypeEl.textContent = "MENGGUNAKAN MEMORI CACHE (LOCAL CACHE)";
-            connTypeEl.className = "font-bold text-amber-400";
-            if (indicatorDot) indicatorDot.className = "relative inline-flex rounded-full h-2 w-2 bg-amber-500";
-            if (indicatorPing) indicatorPing.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75";
+            connTypeEl.className = "font-bold text-orange-400 font-mono";
+            if (indicatorDot) indicatorDot.className = "relative inline-flex rounded-full h-2 w-2 bg-orange-500";
+            if (indicatorPing) indicatorPing.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75";
           }
         }
 
         if (lastUpdatedEl) {
-          lastUpdatedEl.textContent = json.lastUpdated || "-";
+          lastUpdatedEl.textContent = lastUpdatedStr || "-";
         }
 
         if (locNameEl) {
@@ -642,25 +665,35 @@
         }
 
         if (statusBadgeEl) {
-          statusBadgeEl.textContent = (json.source || "LIVE").toUpperCase();
+          statusBadgeEl.textContent = isLive ? "ONLINE" : "OFFLINE";
           if (isLive) {
             statusBadgeEl.className = "text-[8px] font-black tracking-widest text-[#062B24] bg-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded uppercase font-bold";
           } else {
-            statusBadgeEl.className = "text-[8px] font-black tracking-widest text-[#062B24] bg-amber-400 border border-amber-500/20 px-2 py-0.5 rounded uppercase font-bold";
+            statusBadgeEl.className = "text-[8px] font-black tracking-widest text-[#062B24] bg-orange-400 border border-orange-500/30 px-2 py-0.5 rounded uppercase font-bold";
           }
         }
-
-      } catch (e) {
-        console.error("Gagal mengemaskini status API solat:", e);
-        const connTypeEl = document.getElementById('status-conn-type');
+      } else {
         if (connTypeEl) {
-          connTypeEl.textContent = "RALAT HUBUNGAN (OFFLINE)";
-          connTypeEl.className = "font-bold text-red-400";
+          connTypeEl.textContent = "TIADA SAMBUNGAN (OFFLINE FALLBACK)";
+          connTypeEl.className = "font-bold text-orange-400 font-mono";
+          if (indicatorDot) indicatorDot.className = "relative inline-flex rounded-full h-2 w-2 bg-orange-500";
+          if (indicatorPing) indicatorPing.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75";
         }
-      } finally {
-        if (btnRefresh) {
-          btnRefresh.classList.remove('animate-spin');
+        if (statusBadgeEl) {
+          statusBadgeEl.textContent = "OFFLINE";
+          statusBadgeEl.className = "text-[8px] font-black tracking-widest text-white bg-orange-500 border border-orange-600 px-2 py-0.5 rounded uppercase font-bold";
         }
+        if (lastUpdatedEl) {
+          lastUpdatedEl.textContent = "MENGGUNAKAN MATEMATIK TEMPATAN";
+        }
+        if (locNameEl) {
+          const zoneObj = COMPREHENSIVE_MALAYSIAN_ZONES.find(z => z.code === zone);
+          locNameEl.textContent = zoneObj ? zoneObj.name : zone;
+        }
+      }
+
+      if (btnRefresh) {
+        btnRefresh.classList.remove('animate-spin');
       }
     };
 

@@ -596,49 +596,69 @@
       return 'WLY01';
     }
 
-    // Helper to update the API live/cached status badge in standalone.html
+    // Helper to update the API live/cached status badge in index.html
     function updateApiStatusBadge(source, lastUpdated, zone) {
       const badge = document.getElementById('api-status-badge');
       const text = document.getElementById('api-status-text');
       if (!badge || !text) return;
       
       if (source === 'live') {
-        badge.className = "flex items-center gap-1 text-[8px] font-bold mt-1 uppercase tracking-wider bg-emerald-950/65 border border-emerald-500/20 px-1.5 py-0.5 rounded-md text-emerald-400 w-max cursor-default transition-all duration-300";
+        // ONLINE - Green color
+        badge.className = "flex items-center gap-1 text-[8px] font-bold mt-1 uppercase tracking-wider bg-emerald-950/65 border border-emerald-500/30 px-1.5 py-0.5 rounded-md text-emerald-400 w-max cursor-default transition-all duration-300";
         text.innerHTML = `<span class="relative flex h-1.5 w-1.5 mr-0.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span></span> API STATUS: ONLINE (${zone})`;
         badge.title = `Kemas kini terakhir: ${lastUpdated}`;
-      } else if (source === 'cache') {
-        badge.className = "flex items-center gap-1 text-[8px] font-bold mt-1 uppercase tracking-wider bg-[#2c1d01]/85 border border-amber-500/40 px-1.5 py-0.5 rounded-md text-amber-400 w-max cursor-default transition-all duration-300";
-        text.innerHTML = `<span class="relative flex h-1.5 w-1.5 mr-0.5"><span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-500"></span></span> API STATUS: OFFLINE (${zone})`;
-        badge.title = `Rekod Cache: ${lastUpdated}`;
       } else {
-        badge.className = "flex items-center gap-1 text-[8px] font-bold mt-1 uppercase tracking-wider bg-red-950/65 border border-red-500/20 px-1.5 py-0.5 rounded-md text-red-500 w-max cursor-default transition-all duration-300";
-        text.innerHTML = `⚠️ API STATUS: ERROR (${zone})`;
-        badge.title = "Menggunakan pengiraan matematik solat tempatan";
+        // OFFLINE - Orange color (for cached or local calculation fallback)
+        badge.className = "flex items-center gap-1 text-[8px] font-bold mt-1 uppercase tracking-wider bg-orange-950/65 border border-orange-500/30 px-1.5 py-0.5 rounded-md text-orange-400 w-max cursor-default transition-all duration-300";
+        text.innerHTML = `<span class="relative flex h-1.5 w-1.5 mr-0.5"><span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-orange-500"></span></span> API STATUS: OFFLINE (${zone})`;
+        badge.title = lastUpdated ? `Rekod Cache: ${lastUpdated}` : "Menggunakan pengiraan matematik solat tempatan";
       }
     }
 
-    // Fetch live prayer times from Malaysia e-Solat via server-side proxy
+    // Fetch live prayer times from Malaysia e-Solat via server-side proxy or direct frontend fetch
     async function fetchApiPrayerTimes() {
       const zoneCode = getZoneFromConfig();
       try {
         const res = await fetch(`/api/prayer-times?zone=${zoneCode}`);
-        if (!res.ok) throw new Error('API server returned error');
+        if (!res.ok) throw new Error('API server returned error status');
         const json = await res.json();
         
+        if (json.error || !json.data) {
+          throw new Error(json.error || 'Server returned invalid proxy data');
+        }
+
         const parsed = parsePrayerTimesResponse(json.data);
         if (parsed) {
           apiTimes = parsed;
           updateApiStatusBadge(json.source, json.lastUpdated, zoneCode);
         } else {
-          apiTimes = null;
-          updateApiStatusBadge('offline', null, zoneCode);
+          throw new Error('Gagal memproses data ralat JAKIM');
         }
         calculateAndRenderSchedule();
       } catch (e) {
-        console.warn('API fetch failed or blocked by CORS. Using robust local fallback.', e);
-        apiTimes = null;
-        updateApiStatusBadge('offline', null, zoneCode);
-        calculateAndRenderSchedule();
+        console.warn('Backend proxy fetch failed. Trying direct client browser fetch to JAKIM e-Solat...', e);
+        
+        try {
+          const directRes = await fetch(`https://api.e-solat.gov.my/index.php?r=esolat/getmain&zone=${zoneCode}&period=today`);
+          if (!directRes.ok) throw new Error('Direct e-Solat API returned error status');
+          const directData = await directRes.json();
+          
+          const parsed = parsePrayerTimesResponse(directData);
+          if (parsed) {
+            apiTimes = parsed;
+            const lastUpdated = new Date().toLocaleString("ms-MY", { timeZone: "Asia/Kuala_Lumpur" });
+            updateApiStatusBadge('live', lastUpdated, zoneCode);
+          } else {
+            apiTimes = null;
+            updateApiStatusBadge('offline', null, zoneCode);
+          }
+          calculateAndRenderSchedule();
+        } catch (directErr) {
+          console.warn('Direct e-Solat fetch also failed. Using robust local fallback.', directErr);
+          apiTimes = null;
+          updateApiStatusBadge('offline', null, zoneCode);
+          calculateAndRenderSchedule();
+        }
       }
     }
 
