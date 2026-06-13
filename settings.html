@@ -1237,20 +1237,37 @@
 
       try {
         const base64Data = await getBase64(file);
-        const res = await fetch('/api/upload-qr', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fileName: file.name, fileData: base64Data })
-        });
+        let finalUrl = base64Data;
+        let isStandAlone = false;
 
-        if (!res.ok) throw new Error('Upload gagal');
-         const data = await res.json();
+        try {
+          const res = await fetch('/api/upload-qr', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fileName: file.name, fileData: base64Data })
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            finalUrl = data.url;
+          } else {
+            isStandAlone = true;
+          }
+        } catch (serverErr) {
+          console.warn("Server upload failed, using high-performance local Base64 storage instead:", serverErr);
+          isStandAlone = true;
+        }
         
-        appConfig.qrImage = data.url;
+        appConfig.qrImage = finalUrl;
         updateQRPreview();
         
-        statusEl.textContent = 'QR Berjaya Dimuat Naik!';
-        statusEl.className = 'text-xs text-emerald-400 font-bold mt-1 uppercase';
+        if (isStandAlone) {
+          statusEl.textContent = 'QR Disimpan dalam Pelayar (Mod Tanpa Pelayan)!';
+          statusEl.className = 'text-xs text-orange-400 font-bold mt-1 uppercase';
+        } else {
+          statusEl.textContent = 'QR Berjaya Dimuat Naik ke Pelayan!';
+          statusEl.className = 'text-xs text-emerald-400 font-bold mt-1 uppercase';
+        }
         showTemporaryStatus('Gambar QR dikemaskini. Muat semula untuk merasai impak!');
       } catch (err) {
         statusEl.textContent = 'Upload QR Gagal: ' + err.message;
@@ -1275,7 +1292,7 @@
 
       if (appConfig.qrImage) {
         img.src = appConfig.qrImage;
-        urlText.textContent = appConfig.qrImage;
+        urlText.textContent = appConfig.qrImage.startsWith('data:') ? 'DATA IMAGE (STANDALONE CACHE)' : appConfig.qrImage;
         container.classList.remove('hidden');
       } else {
         container.classList.add('hidden');
@@ -1293,18 +1310,36 @@
 
       try {
         const base64Data = await getBase64(file);
-        const res = await fetch('/api/upload-photo', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fileName: file.name, fileData: base64Data })
-        });
+        let finalUrl = base64Data;
+        let isStandAlone = false;
 
-        if (!res.ok) throw new Error('Upload gagal');
-        const data = await res.json();
+        try {
+          const res = await fetch('/api/upload-photo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fileName: file.name, fileData: base64Data })
+          });
 
-        document.getElementById('new-slide-image').value = data.url;
-        statusEl.textContent = 'Kandungan Gambar Berjaya Dimuat Naik!';
-        statusEl.className = 'text-xs text-emerald-400 font-bold mt-1 uppercase';
+          if (res.ok) {
+            const data = await res.json();
+            finalUrl = data.url;
+          } else {
+            isStandAlone = true;
+          }
+        } catch (serverErr) {
+          console.warn("Server upload failed, using high-performance local Base64 storage instead:", serverErr);
+          isStandAlone = true;
+        }
+
+        document.getElementById('new-slide-image').value = finalUrl;
+        
+        if (isStandAlone) {
+          statusEl.textContent = 'Gambar Slaid Diintegrasi (Mod Tanpa Pelayan)!';
+          statusEl.className = 'text-xs text-orange-400 font-bold mt-1 uppercase';
+        } else {
+          statusEl.textContent = 'Kandungan Gambar Berjaya Dimuat Naik!';
+          statusEl.className = 'text-xs text-emerald-400 font-bold mt-1 uppercase';
+        }
       } catch (err) {
         statusEl.textContent = 'Upload Gagal: ' + err.message;
         statusEl.className = 'text-xs text-red-400 font-bold mt-1 uppercase';
@@ -1322,26 +1357,43 @@
 
       try {
         const base64Data = await getBase64(file);
-        const res = await fetch('/api/upload-photo', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fileName: `preset_${Date.now()}_${file.name}`, fileData: base64Data })
-        });
+        let finalUrl = base64Data;
+        let isStandAlone = false;
 
-        if (!res.ok) throw new Error('Upload gagal');
-        const data = await res.json();
+        try {
+          const res = await fetch('/api/upload-photo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fileName: `preset_${Date.now()}_${file.name}`, fileData: base64Data })
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            finalUrl = data.url;
+          } else {
+            isStandAlone = true;
+          }
+        } catch (serverErr) {
+          console.warn("Server preset upload failed, storing locally as Base64 preset:", serverErr);
+          isStandAlone = true;
+        }
 
         if (!appConfig.customPresets) {
           appConfig.customPresets = [];
         }
-        appConfig.customPresets.push(data.url);
+        appConfig.customPresets.push(finalUrl);
         
         // Render update list and select
         renderPresetPicker();
-        document.getElementById('new-slide-image').value = data.url;
+        document.getElementById('new-slide-image').value = finalUrl;
 
-        statusEl.textContent = 'Preset Ditambah & Terpilih!';
-        statusEl.className = 'text-xs text-emerald-400 font-bold mt-1';
+        if (isStandAlone) {
+          statusEl.textContent = 'Preset Ditambah & Terpilih (Mod Tanpa Pelayan)!';
+          statusEl.className = 'text-xs text-orange-400 font-bold mt-1';
+        } else {
+          statusEl.textContent = 'Preset Ditambah & Terpilih!';
+          statusEl.className = 'text-xs text-emerald-400 font-bold mt-1';
+        }
         showTemporaryStatus('Preset baru ditambah! Klik simpan untuk menetapkan.');
       } catch (err) {
         statusEl.textContent = 'Gagal menambah preset: ' + err.message;
