@@ -642,6 +642,19 @@
       const indicatorPing = document.getElementById('api-indicator-ping');
 
       if (dataFetched) {
+        const parsedTimes = parsePrayerTimesResponse(dataFetched);
+        if (parsedTimes) {
+          appConfig.apiTimes = parsedTimes;
+          try {
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appConfig));
+            fetch('/api/save-config', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(appConfig)
+            }).catch(() => {});
+          } catch(storageErr) {}
+        }
+
         const isLive = sourceFetched === "live";
         if (connTypeEl) {
           if (isLive) {
@@ -699,6 +712,62 @@
         btnRefresh.classList.remove('animate-spin');
       }
     };
+
+    // Parse Response from Malaysia e-Solat endpoint
+    function parsePrayerTimesResponse(data) {
+      if (!data) return null;
+      let targetObj = data;
+      if (data.prayerTime && Array.isArray(data.prayerTime) && data.prayerTime.length > 0) {
+        targetObj = data.prayerTime[0];
+      } else if (Array.isArray(data) && data.length > 0) {
+        targetObj = data[0];
+      } else if (data.data && Array.isArray(data.data) && data.data.length > 0) {
+        targetObj = data.data[0];
+        if (targetObj && targetObj.timings) {
+          targetObj = targetObj.timings;
+        }
+      } else if (data.data && typeof data.data === 'object') {
+        targetObj = data.data;
+        if (targetObj.timings) {
+          targetObj = targetObj.timings;
+        }
+      }
+
+      if (typeof targetObj !== 'object' || targetObj === null) {
+        return null;
+      }
+
+      const findValue = (keys) => {
+        for (const key of keys) {
+          if (targetObj[key] !== undefined) return String(targetObj[key]);
+          const lowerKey = key.toLowerCase();
+          const actualKey = Object.keys(targetObj).find(k => k.toLowerCase() === lowerKey);
+          if (actualKey && targetObj[actualKey] !== undefined) {
+            return String(targetObj[actualKey]);
+          }
+        }
+        return null;
+      };
+
+      const subuh = findValue(['subuh', 'fajr']);
+      const syuruk = findValue(['syuruk', 'shuruq', 'sunrise']);
+      const zohor = findValue(['zohor', 'dhuhr', 'noon', 'zuhr']);
+      const asar = findValue(['asar', 'asr']);
+      const maghrib = findValue(['maghrib', 'sunset']);
+      const isyak = findValue(['isyak', 'isha']);
+
+      if (subuh && zohor && asar && maghrib && isyak) {
+        return {
+          subuh,
+          syuruk: syuruk || '07:05',
+          zohor,
+          asar,
+          maghrib,
+          isyak
+        };
+      }
+      return null;
+    }
 
     window.forceFetchLatestSolatTimes = async function() {
       const statusBar = document.getElementById('sync-status');
@@ -1074,6 +1143,7 @@
         isyakOffset: Number(document.getElementById('setup-offset-isyak').value) || 0,
         qrImage: appConfig.qrImage || '',
         customPresets: appConfig.customPresets || [],
+        apiTimes: appConfig.apiTimes || null,
         lastUpdated: Date.now()
       };
 
@@ -1450,6 +1520,7 @@
         isyakOffset: Number(document.getElementById('setup-offset-isyak').value) || 0,
         qrImage: appConfig.qrImage || '',
         customPresets: appConfig.customPresets || [],
+        apiTimes: appConfig.apiTimes || null,
         lastUpdated: Date.now()
       };
 

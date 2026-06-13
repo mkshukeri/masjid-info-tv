@@ -544,6 +544,9 @@
       if (!appConfig.announcements || appConfig.announcements.length === 0) {
         appConfig.announcements = [...DEFAULT_CONFIG.announcements];
       }
+      if (appConfig.apiTimes) {
+        apiTimes = appConfig.apiTimes;
+      }
     }
 
     // Save configuration
@@ -673,6 +676,15 @@
         const parsed = parsePrayerTimesResponse(json.data);
         if (parsed) {
           apiTimes = parsed;
+          appConfig.apiTimes = parsed;
+          try {
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appConfig));
+            fetch('/api/save-config', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(appConfig)
+            }).catch(() => {});
+          } catch(storageErr) {}
           updateApiStatusBadge(json.source, json.lastUpdated, zoneCode);
         } else {
           throw new Error('Gagal memproses data ralat JAKIM');
@@ -689,16 +701,25 @@
           const parsed = parsePrayerTimesResponse(directData);
           if (parsed) {
             apiTimes = parsed;
+            appConfig.apiTimes = parsed;
+            try {
+              localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appConfig));
+              fetch('/api/save-config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(appConfig)
+              }).catch(() => {});
+            } catch(storageErr) {}
             const lastUpdated = new Date().toLocaleString("ms-MY", { timeZone: "Asia/Kuala_Lumpur" });
             updateApiStatusBadge('live', lastUpdated, zoneCode);
           } else {
-            apiTimes = null;
+            apiTimes = appConfig.apiTimes || null;
             updateApiStatusBadge('offline', null, zoneCode);
           }
           calculateAndRenderSchedule();
         } catch (directErr) {
           console.warn('Direct e-Solat fetch also failed. Using robust local fallback.', directErr);
-          apiTimes = null;
+          apiTimes = appConfig.apiTimes || null;
           updateApiStatusBadge('offline', null, zoneCode);
           calculateAndRenderSchedule();
         }
@@ -864,7 +885,7 @@
               <div class="text-center my-2">
                 <span class="text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-extrabold tracking-tighter tabular-nums text-[#F8F4E8]">${p.time}</span>
               </div>
-              <div class="text-[9px] text-[#B8C7BE] opacity-60 tracking-[0.15em] font-medium font-sans uppercase">Zon WLY01</div>
+              <div class="text-[9px] text-[#B8C7BE] opacity-60 tracking-[0.15em] font-medium font-sans uppercase">Zon ${getZoneFromConfig()}</div>
             </div>
           `;
         }
