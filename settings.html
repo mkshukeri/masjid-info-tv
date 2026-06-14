@@ -108,6 +108,51 @@
       --bg-sec-btn: #363636;
     }
 
+    /* ================= HIGH CONTRAST PRESETS ================= */
+    html.theme-green-contrast {
+      --bg-body: #000000;
+      --bg-inner: #041512;
+      --bg-panel: #092D25;
+      --border-color: rgba(0, 255, 127, 0.5);
+      --border-solid: #00FF7F;
+      --accent: #00FF7F;
+      --accent-hover: #E0FFE0;
+      --bg-sec-btn: #104E3F;
+    }
+
+    html.theme-blue-contrast {
+      --bg-body: #000000;
+      --bg-inner: #030C1D;
+      --bg-panel: #0A1C3E;
+      --border-color: rgba(0, 229, 255, 0.5);
+      --border-solid: #00E5FF;
+      --accent: #00E5FF;
+      --accent-hover: #E0FFFF;
+      --bg-sec-btn: #112E5B;
+    }
+
+    html.theme-maroon-contrast {
+      --bg-body: #000000;
+      --bg-inner: #190204;
+      --bg-panel: #340910;
+      --border-color: rgba(255, 107, 107, 0.5);
+      --border-solid: #FF6B6B;
+      --accent: #FFD700;
+      --accent-hover: #FFFFFF;
+      --bg-sec-btn: #4F111B;
+    }
+
+    html.theme-purple-contrast {
+      --bg-body: #000000;
+      --bg-inner: #110221;
+      --bg-panel: #27084A;
+      --border-color: rgba(219, 112, 147, 0.5);
+      --border-solid: #DA70D6;
+      --accent: #FFFFFF;
+      --accent-hover: #F0D5FF;
+      --bg-sec-btn: #3B1167;
+    }
+
     /* Apply Dynamic Theme Color variables on general UI classes */
     body {
       background-color: var(--bg-body) !important;
@@ -193,6 +238,31 @@
     }
     .border-red-500\/30 {
       border-color: rgba(239, 68, 68, 0.3) !important;
+    }
+    .border-\[\#D8B45A\]\/50 {
+      border-color: var(--border-color) !important;
+    }
+
+    /* Premium dynamic CSS overrides for gradients and inline SVG colors */
+    .bg-gradient-to-t.from-\[\#062B24\] {
+      background-image: linear-gradient(to top, var(--bg-inner), var(--bg-inner) 60%, transparent 100%) !important;
+    }
+    .bg-gradient-to-br.from-\[\#0B3D33\] {
+      background-image: linear-gradient(to bottom right, var(--bg-panel), var(--bg-panel) 50%, var(--bg-sec-btn) 100%) !important;
+    }
+    .bg-\[rgba\(6\,43\,36\,0\.85\)\] {
+      background-color: var(--bg-inner) !important;
+      opacity: 0.85;
+    }
+    .bg-\[rgba\(6\,43\,36\,0\.95\)\] {
+      background-color: var(--bg-inner) !important;
+      opacity: 0.95;
+    }
+    svg path[fill="#062B24"], svg [fill="#062B24"] {
+      fill: var(--bg-inner) !important;
+    }
+    svg text[fill="#062B24"], svg [fill="#062B24"] {
+      color: var(--bg-inner) !important;
     }
 
     .bg-pattern {
@@ -466,39 +536,70 @@
             <span>TEMA WARNA PAPARAN</span>
           </h3>
 
-          <div class="space-y-3">
-            <label class="block text-[10px] font-bold text-[#B8C7BE] uppercase tracking-wider">Pilih Tema Preset</label>
-            <div class="grid grid-cols-2 gap-2" id="theme-presets-container">
-              <button type="button" onclick="selectTheme('green')" id="theme-btn-green" class="flex items-center gap-2 bg-[#062B24] border-2 border-[#D8B45A] hover:border-[#D8B45A] px-3 py-2.5 rounded-xl transition text-[#F8F4E8] text-xs font-black tracking-wider cursor-pointer">
-                <span class="w-3.5 h-3.5 rounded-full bg-[#0B3D33] border border-[#D8B45A]/60 shrink-0"></span>
-                <span>HIJAU (ASAL)</span>
-              </button>
+          <div class="space-y-4">
+            <div class="space-y-1.5">
+              <label class="block text-[10px] font-black text-[#D8B45A] uppercase tracking-widest border-b border-[#D8B45A]/10 pb-1">Preset Tema Lembut</label>
+              <div class="grid grid-cols-2 gap-2" id="theme-presets-smooth-container">
+                <button type="button" onclick="selectTheme('green')" id="theme-btn-green" class="flex items-center gap-2 bg-[#062B24] border-2 border-[#D8B45A] hover:border-[#D8B45A] px-3 py-2.5 rounded-xl transition text-[#F8F4E8] text-xs font-black tracking-wider cursor-pointer col-span-1">
+                  <span class="w-3.5 h-3.5 rounded-full bg-[#0B3D33] border border-[#D8B45A]/60 shrink-0"></span>
+                  <span>HIJAU (ASAL)</span>
+                </button>
 
-              <button type="button" onclick="selectTheme('darkblue')" id="theme-btn-darkblue" class="flex items-center gap-2 bg-[#062B24] border-2 border-transparent hover:border-[#D8B45A]/50 px-3 py-2.5 rounded-xl transition text-[#F8F4E8] text-xs font-black tracking-wider cursor-pointer">
-                <span class="w-3.5 h-3.5 rounded-full bg-[#142C54] border border-[#B4D2F5]/60 shrink-0"></span>
-                <span>BIRU GELAP</span>
-              </button>
+                <button type="button" onclick="selectTheme('darkblue')" id="theme-btn-darkblue" class="flex items-center gap-2 bg-[#062B24] border-2 border-transparent hover:border-[#D8B45A]/50 px-3 py-2.5 rounded-xl transition text-[#F8F4E8] text-xs font-black tracking-wider cursor-pointer col-span-1">
+                  <span class="w-3.5 h-3.5 rounded-full bg-[#142C54] border border-[#B4D2F5]/60 shrink-0"></span>
+                  <span>BIRU GELAP</span>
+                </button>
 
-              <button type="button" onclick="selectTheme('maroon')" id="theme-btn-maroon" class="flex items-center gap-2 bg-[#062B24] border-2 border-transparent hover:border-[#D8B45A]/50 px-3 py-2.5 rounded-xl transition text-[#F8F4E8] text-xs font-black tracking-wider cursor-pointer">
-                <span class="w-3.5 h-3.5 rounded-full bg-[#44141B] border border-[#EBB360]/60 shrink-0"></span>
-                <span>MAROON</span>
-              </button>
+                <button type="button" onclick="selectTheme('maroon')" id="theme-btn-maroon" class="flex items-center gap-2 bg-[#062B24] border-2 border-transparent hover:border-[#D8B45A]/50 px-3 py-2.5 rounded-xl transition text-[#F8F4E8] text-xs font-black tracking-wider cursor-pointer col-span-1">
+                  <span class="w-3.5 h-3.5 rounded-full bg-[#44141B] border border-[#EBB360]/60 shrink-0"></span>
+                  <span>MAROON</span>
+                </button>
 
-              <button type="button" onclick="selectTheme('darkpurple')" id="theme-btn-darkpurple" class="flex items-center gap-2 bg-[#062B24] border-2 border-transparent hover:border-[#D8B45A]/50 px-3 py-2.5 rounded-xl transition text-[#F8F4E8] text-xs font-black tracking-wider cursor-pointer">
-                <span class="w-3.5 h-3.5 rounded-full bg-[#2F1449] border border-[#D1A7FC]/60 shrink-0"></span>
-                <span>UNGU GELAP</span>
-              </button>
+                <button type="button" onclick="selectTheme('darkpurple')" id="theme-btn-darkpurple" class="flex items-center gap-2 bg-[#062B24] border-2 border-transparent hover:border-[#D8B45A]/50 px-3 py-2.5 rounded-xl transition text-[#F8F4E8] text-xs font-black tracking-wider cursor-pointer col-span-1">
+                  <span class="w-3.5 h-3.5 rounded-full bg-[#2F1449] border border-[#D1A7FC]/60 shrink-0"></span>
+                  <span>UNGU GELAP</span>
+                </button>
 
-              <button type="button" onclick="selectTheme('teak')" id="theme-btn-teak" class="flex items-center gap-2 bg-[#062B24] border-2 border-transparent hover:border-[#D8B45A]/50 px-3 py-2.5 rounded-xl transition text-[#F8F4E8] text-xs font-black tracking-wider cursor-pointer">
-                <span class="w-3.5 h-3.5 rounded-full bg-[#3A271B] border border-[#E8A96B]/60 shrink-0"></span>
-                <span>KAYU TEAK</span>
-              </button>
+                <button type="button" onclick="selectTheme('teak')" id="theme-btn-teak" class="flex items-center gap-2 bg-[#062B24] border-2 border-transparent hover:border-[#D8B45A]/50 px-3 py-2.5 rounded-xl transition text-[#F8F4E8] text-xs font-black tracking-wider cursor-pointer col-span-1">
+                  <span class="w-3.5 h-3.5 rounded-full bg-[#3A271B] border border-[#E8A96B]/60 shrink-0"></span>
+                  <span>KAYU TEAK</span>
+                </button>
 
-              <button type="button" onclick="selectTheme('charcoal')" id="theme-btn-charcoal" class="flex items-center gap-2 bg-[#062B24] border-2 border-transparent hover:border-[#D8B45A]/50 px-3 py-2.5 rounded-xl transition text-[#F8F4E8] text-xs font-black tracking-wider cursor-pointer">
-                <span class="w-3.5 h-3.5 rounded-full bg-[#262626] border border-[#E2C074]/60 shrink-0"></span>
-                <span>ARANG / EMAS</span>
-              </button>
+                <button type="button" onclick="selectTheme('charcoal')" id="theme-btn-charcoal" class="flex items-center gap-2 bg-[#062B24] border-2 border-transparent hover:border-[#D8B45A]/50 px-3 py-2.5 rounded-xl transition text-[#F8F4E8] text-xs font-black tracking-wider cursor-pointer col-span-1">
+                  <span class="w-3.5 h-3.5 rounded-full bg-[#262626] border border-[#E2C074]/60 shrink-0"></span>
+                  <span>ARANG / EMAS</span>
+                </button>
+              </div>
             </div>
+
+            <div class="space-y-1.5 pt-1">
+              <label class="block text-[10px] font-black text-amber-400 uppercase tracking-widest border-b border-amber-500/10 pb-1 flex items-center gap-1">
+                <i data-lucide="eye" class="w-3 h-3 text-amber-400"></i>
+                <span>Syor Tema Kontras Tinggi (TV Cerah)</span>
+              </label>
+              <div class="grid grid-cols-2 gap-2" id="theme-presets-contrast-container">
+                <button type="button" onclick="selectTheme('green-contrast')" id="theme-btn-green-contrast" class="flex items-center gap-2 bg-[#062B24] border-2 border-transparent hover:border-[#D8B45A]/50 px-3 py-2.5 rounded-xl transition text-[#F8F4E8] text-xs font-black tracking-wider cursor-pointer col-span-1">
+                  <span class="w-3.5 h-3.5 rounded-full bg-[#092D25] border border-[#00FF7F] shrink-0"></span>
+                  <span>HIJAU STARK</span>
+                </button>
+
+                <button type="button" onclick="selectTheme('blue-contrast')" id="theme-btn-blue-contrast" class="flex items-center gap-2 bg-[#062B24] border-2 border-transparent hover:border-[#D8B45A]/50 px-3 py-2.5 rounded-xl transition text-[#F8F4E8] text-xs font-black tracking-wider cursor-pointer col-span-1">
+                  <span class="w-3.5 h-3.5 rounded-full bg-[#0A1C3E] border border-[#00E5FF] shrink-0"></span>
+                  <span>BIRU NEON</span>
+                </button>
+
+                <button type="button" onclick="selectTheme('maroon-contrast')" id="theme-btn-maroon-contrast" class="flex items-center gap-2 bg-[#062B24] border-2 border-transparent hover:border-[#D8B45A]/50 px-3 py-2.5 rounded-xl transition text-[#F8F4E8] text-xs font-black tracking-wider cursor-pointer col-span-1">
+                  <span class="w-3.5 h-3.5 rounded-full bg-[#340910] border border-[#FF6B6B] shrink-0"></span>
+                  <span>MAROON STARK</span>
+                </button>
+
+                <button type="button" onclick="selectTheme('purple-contrast')" id="theme-btn-purple-contrast" class="flex items-center gap-2 bg-[#062B24] border-2 border-transparent hover:border-[#D8B45A]/50 px-3 py-2.5 rounded-xl transition text-[#F8F4E8] text-xs font-black tracking-wider cursor-pointer col-span-1">
+                  <span class="w-3.5 h-3.5 rounded-full bg-[#27084A] border border-[#DA70D6] shrink-0"></span>
+                  <span>UNGU KONTRAS</span>
+                </button>
+              </div>
+            </div>
+
             <p class="text-[9px] text-[#B8C7BE] leading-relaxed uppercase mt-1">Sila klik 'SIMPAN SEMUA PERUBAHAN' di bawah selepas menukar tema untuk membolehkan skrin TV menyegerak!</p>
           </div>
         </section>
@@ -1094,7 +1195,7 @@
       document.documentElement.className = `h-full theme-${themeName}`;
       
       // Highlight selected preset item active border glow and color status indicators
-      const allPresets = ['green', 'darkblue', 'maroon', 'darkpurple', 'teak', 'charcoal'];
+      const allPresets = ['green', 'darkblue', 'maroon', 'darkpurple', 'teak', 'charcoal', 'green-contrast', 'blue-contrast', 'maroon-contrast', 'purple-contrast'];
       allPresets.forEach(tName => {
         const btn = document.getElementById(`theme-btn-${tName}`);
         if (btn) {
