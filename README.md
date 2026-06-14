@@ -158,6 +158,35 @@ Dengan fungsi backup ini, pihak masjid boleh:
 
 ---
 
+## 1.8 Tema Warna Paparan
+
+Masjid Info TV turut menyediakan pilihan **tema warna paparan** supaya paparan boleh disesuaikan mengikut suasana masjid, jenis TV dan tahap kecerahan skrin.
+
+Tema boleh dipilih terus melalui halaman konfigurasi tanpa perlu mengubah kod sistem.
+
+Pilihan tema yang tersedia termasuk:
+
+### Preset Tema Lembut
+
+* Hijau (Asal)
+* Biru Gelap
+* Maroon
+* Ungu Gelap
+* Kayu Teak
+* Arang / Emas
+
+### Tema Kontras Tinggi
+
+Tema ini sesuai untuk TV yang cerah, ruang paparan yang luas, atau keadaan di mana teks perlu lebih jelas dari jarak jauh.
+
+* Hijau Stark
+* Biru Neon
+* Maroon Stark
+* Ungu Kontras
+
+Fungsi ini memudahkan pihak masjid memilih tema yang lebih selesa dilihat oleh jemaah tanpa perlu membuat perubahan teknikal.
+
+---
 # 2. Kelebihan Masjid Info TV
 
 ## 2.1 Tidak Perlu Server
