@@ -214,6 +214,15 @@
     .bg-\[\#0F4A3D\] {
       background-color: var(--bg-sec-btn) !important;
     }
+    .bg-\[\#0B3D33\]\/90 {
+      background-color: color-mix(in srgb, var(--bg-panel) 90%, transparent) !important;
+    }
+    .bg-\[\#0F4A3D\]\/80 {
+      background-color: color-mix(in srgb, var(--bg-sec-btn) 80%, transparent) !important;
+    }
+    .bg-\[\#062B24\]\/40 {
+      background-color: color-mix(in srgb, var(--bg-inner) 40%, transparent) !important;
+    }
     .hover\:bg-\[\#062B24\]:hover {
       background-color: var(--bg-inner) !important;
     }
@@ -1129,7 +1138,7 @@
             <img src="${active.imageUrl}" alt="${active.title}" class="absolute inset-0 w-full h-full object-cover select-none ${hasQuote ? 'brightness-[0.7]' : 'brightness-[0.95]'}" />
             <div class="absolute inset-0 opacity-10 bg-pattern mix-blend-overlay pointer-events-none"></div>
             ${hasQuote ? `
-              <div class="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-[#062B24] via-[rgba(6,43,36,0.95)] to-transparent z-10 pointer-events-none"></div>
+              <div class="absolute inset-x-0 bottom-0 h-2/3 z-10 pointer-events-none" style="background-image: linear-gradient(to top, var(--bg-inner) 0%, color-mix(in srgb, var(--bg-inner) 95%, transparent) 60%, transparent 100%);"></div>
               
               <div class="relative z-10 p-10 pb-16 text-center max-w-4xl mx-auto flex flex-col items-center gap-5 justify-end h-full">
                 <span class="text-[#D8B45A] text-xs font-bold tracking-[0.3em] uppercase">HADITH / MUTIARA DAKWAH</span>
@@ -1137,7 +1146,7 @@
                   ${active.quote}
                 </p>
                 ${active.source ? `
-                  <div class="text-xs font-bold tracking-[0.2em] text-[#D8B45A] uppercase bg-[#0B3D33]/90 border border-[rgba(216,180,90,0.3)] px-4 py-1.5 rounded-md mt-1">
+                  <div class="text-xs font-bold tracking-[0.2em] text-[#D8B45A] uppercase border px-4 py-1.5 rounded-md mt-1" style="background-color: color-mix(in srgb, var(--bg-panel) 90%, transparent); border-color: var(--border-color);">
                     — ${active.source}
                   </div>
                 ` : ''}
@@ -1147,7 +1156,7 @@
         `;
       } else {
         slideContent.innerHTML = `
-          <div class="relative flex-1 w-full h-full flex flex-col items-center justify-center p-10 bg-gradient-to-br from-[#0B3D33] via-[#0B3D33] to-[#0F4A3D] transition-all duration-300">
+          <div class="relative flex-1 w-full h-full flex flex-col items-center justify-center p-10 transition-all duration-300" style="background-image: linear-gradient(to bottom right, var(--bg-panel) 0%, var(--bg-panel) 50%, var(--bg-sec-btn) 100%);">
             <div class="absolute inset-0 opacity-15 bg-pattern pointer-events-none"></div>
             <div class="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
               <div class="w-[500px] h-[500px] rounded-full border border-[#D8B45A] flex items-center justify-center">
@@ -1163,7 +1172,7 @@
                 ${active.quote || "Selamat Datang ke " + appConfig.masjidName}
               </p>
               ${active.source ? `
-                <div class="text-[#B8C7BE] font-bold text-xs uppercase tracking-[0.25em] bg-[#062B24] border border-[rgba(216,180,90,0.2)] px-4 py-1.5 rounded mt-3">
+                <div class="text-[#B8C7BE] font-bold text-xs uppercase tracking-[0.25em] border px-4 py-1.5 rounded mt-3" style="background-color: var(--bg-inner); border-color: var(--border-color);">
                   ${active.source}
                 </div>
               ` : ''}
