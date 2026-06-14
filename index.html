@@ -880,9 +880,9 @@
         text.innerHTML = `<span class="relative inline-flex h-1.5 w-1.5 mr-1 align-middle"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span></span> API STATUS: ONLINE (${zone})`;
         badge.title = `Kemas kini terakhir: ${lastUpdated}`;
       } else {
-        // OFFLINE - Orange color (for cached or local calculation fallback)
-        badge.className = "flex items-center gap-1 text-[8px] font-bold mt-1 uppercase tracking-wider bg-orange-950/65 border border-orange-500/30 px-1.5 py-0.5 rounded-md text-orange-400 w-max cursor-default transition-all duration-300";
-        text.innerHTML = `<span class="relative inline-flex h-1.5 w-1.5 mr-1 align-middle"><span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-orange-500"></span></span> API STATUS: OFFLINE (${zone})`;
+        // OFFLINE - Grey color (for cached or local calculation fallback)
+        badge.className = "flex items-center gap-1 text-[8px] font-bold mt-1 uppercase tracking-wider bg-neutral-800/85 border border-neutral-600/40 px-1.5 py-0.5 rounded-md text-neutral-400 w-max cursor-default transition-all duration-300";
+        text.innerHTML = `<span class="relative inline-flex h-1.5 w-1.5 mr-1 align-middle"><span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-neutral-400"></span></span> API STATUS: OFFLINE (${zone})`;
         badge.title = lastUpdated ? `Rekod Cache: ${lastUpdated}` : "Menggunakan pengiraan matematik solat tempatan";
       }
     }
