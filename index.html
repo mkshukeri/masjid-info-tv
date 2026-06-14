@@ -30,9 +30,87 @@
   </script>
 
   <style>
-    /* Premium Mosque TV Screen Custom Animators and Overrides */
+    /* ================= PREMIUM COLOR THEMES ENGINE ================= */
+    :root {
+      --bg-body: #031411;
+      --bg-inner: #062B24;
+      --bg-panel: #0B3D33;
+      --border-color: rgba(216, 180, 90, 0.35);
+      --border-solid: #D8B45A;
+      --accent: #D8B45A;
+      --accent-hover: #F2C94C;
+      --bg-sec-btn: #0F4A3D;
+    }
+
+    html.theme-green {
+      --bg-body: #031411;
+      --bg-inner: #062B24;
+      --bg-panel: #0B3D33;
+      --border-color: rgba(216, 180, 90, 0.35);
+      --border-solid: #D8B45A;
+      --accent: #D8B45A;
+      --accent-hover: #F2C94C;
+      --bg-sec-btn: #0F4A3D;
+    }
+
+    html.theme-darkblue {
+      --bg-body: #081225;
+      --bg-inner: #0C1D3A;
+      --bg-panel: #142C54;
+      --border-color: rgba(180, 210, 245, 0.35);
+      --border-solid: #B4D2F5;
+      --accent: #B4D2F5;
+      --accent-hover: #D4E6FA;
+      --bg-sec-btn: #183D6E;
+    }
+
+    html.theme-maroon {
+      --bg-body: #160305;
+      --bg-inner: #2C0B10;
+      --bg-panel: #44141B;
+      --border-color: rgba(240, 196, 120, 0.35);
+      --border-solid: #EBB360;
+      --accent: #EBB360;
+      --accent-hover: #F2C990;
+      --bg-sec-btn: #5E1D27;
+    }
+
+    html.theme-darkpurple {
+      --bg-body: #0E0316;
+      --bg-inner: #1C0B2B;
+      --bg-panel: #2F1449;
+      --border-color: rgba(219, 180, 255, 0.35);
+      --border-solid: #D1A7FC;
+      --accent: #D1A7FC;
+      --accent-hover: #E3CAFF;
+      --bg-sec-btn: #421D64;
+    }
+
+    html.theme-teak {
+      --bg-body: #150D06;
+      --bg-inner: #26180E;
+      --bg-panel: #3A271B;
+      --border-color: rgba(230, 180, 110, 0.35);
+      --border-solid: #E8A96B;
+      --accent: #E8A96B;
+      --accent-hover: #F2C498;
+      --bg-sec-btn: #51382A;
+    }
+
+    html.theme-charcoal {
+      --bg-body: #111111;
+      --bg-inner: #1A1A1A;
+      --bg-panel: #262626;
+      --border-color: rgba(216, 180, 90, 0.35);
+      --border-solid: #E2C074;
+      --accent: #E2C074;
+      --accent-hover: #EED6A2;
+      --bg-sec-btn: #363636;
+    }
+
+    /* Apply Dynamic Theme Color variables on general UI classes */
     body {
-      background-color: #062B24;
+      background-color: var(--bg-body) !important;
       color: #F8F4E8;
       font-family: 'Inter', sans-serif;
       overflow: hidden;
@@ -68,14 +146,80 @@
       height: 6px;
     }
     ::-webkit-scrollbar-track {
-      background: #062B24;
+      background: var(--bg-inner) !important;
     }
     ::-webkit-scrollbar-thumb {
-      background: #D8B45A;
+      background: var(--accent) !important;
       border-radius: 4px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: #F2C94C;
+      background: var(--accent-hover) !important;
+    }
+
+    /* Tailwind bg arbitrary colors overrides */
+    .bg-\[\#031411\] {
+      background-color: var(--bg-body) !important;
+    }
+    .bg-\[\#062B24\] {
+      background-color: var(--bg-inner) !important;
+    }
+    .bg-\[\#0B3D33\] {
+      background-color: var(--bg-panel) !important;
+    }
+    .bg-\[\#0F4A3D\] {
+      background-color: var(--bg-sec-btn) !important;
+    }
+    .hover\:bg-\[\#062B24\]:hover {
+      background-color: var(--bg-inner) !important;
+    }
+    .hover\:bg-\[\#0B3D33\]:hover {
+      background-color: var(--bg-panel) !important;
+    }
+    
+    /* Solid values for text/border/background highlights overrides */
+    .bg-\[\#D8B45A\] {
+      background-color: var(--accent) !important;
+    }
+    .text-\[\#D8B45A\] {
+      color: var(--accent) !important;
+    }
+    .text-\[\#062B24\] {
+      color: var(--bg-inner) !important;
+    }
+    .hover\:bg-\[\#F2C94C\]:hover {
+      background-color: var(--accent-hover) !important;
+    }
+    
+    /* Borders classes mappings and overrides */
+    .border-\[\#D8B45A\] {
+      border-color: var(--border-solid) !important;
+    }
+    .border-\[\#D8B45A\]\/10,
+    .border-\[\#D8B45A\]\/15,
+    .border-\[\#D8B45A\]\/20,
+    .border-\[\#D8B45A\]\/25,
+    .border-\[\#D8B45A\]\/30,
+    .border-\[\#D8B45A\]\/35,
+    .border-\[\#D8B45A\]\/40 {
+      border-color: var(--border-color) !important;
+    }
+    .border-\[\#D8B45A\]\/60 {
+      border-color: var(--border-solid) !important;
+    }
+    .border-\[rgba\(216\,180\,90\,0\.55\)\] {
+      border-color: var(--border-solid) !important;
+    }
+    .border-\[rgba\(216\,180\,90\,0\.35\)\] {
+      border-color: var(--border-color) !important;
+    }
+    .border-\[rgba\(216\,180\,90\,0\.25\)\] {
+      border-color: var(--border-color) !important;
+    }
+    .border-\[rgba\(216\,180\,90\,0\.15\)\] {
+      border-color: var(--border-color) !important;
+    }
+    .border-red-500\/30 {
+      border-color: rgba(239, 68, 68, 0.3) !important;
     }
 
     /* Arabesque background overlay texture class */
@@ -467,6 +611,7 @@
       qrImage: 'default_qr.png',
       donationMessage: 'Setiap sumbangan ikhlas anda, pahala berpanjangan di akhirat.',
       slideInterval: 10,
+      theme: 'green',
       announcements: [
         'Kuliah Maghrib malam ini selepas solat Maghrib menerangkan Kitab Adab Mualaf.',
         'Sila letakkan telefon bimbit dalam mod senyap sebelum mula bersolat demi menjaga kekhusyukan.',
@@ -1006,6 +1151,10 @@
       document.getElementById('clock-zone-name').textContent = appConfig.zoneCode;
       document.getElementById('qr-target-string').textContent = appConfig.qrData;
       document.getElementById('donation-footer-text').textContent = appConfig.donationMessage;
+
+      // Apply color theme dynamically on root
+      const theme = appConfig.theme || 'green';
+      document.documentElement.className = `theme-${theme}`;
 
       // Dynamic QR card labels and description
       const labelHeader = document.getElementById('qr-label-header');
