@@ -497,3 +497,22 @@ Untuk keselamatan, simpan sekurang-kurangnya satu salinan backup di luar kompute
 * Buat backup melalui **Export Setup**
 * Restore semula melalui **Import Setup**
 * Backup setiap kali selepas membuat perubahan penting
+
+## License
+
+
+Masjid Info TV is licensed under the MIT License.
+
+You are free to use, copy, modify, merge, publish, distribute, sublicense, and sell copies of this software, provided that the original copyright notice and license are included.
+
+This project is provided “as is”, without warranty of any kind.
+
+---
+
+<div align="center">
+
+**Masjid Info TV - Memudahkan Makluman, Menyantuni Jemaah**
+
+Copyright © 2026 Mohd Khairul Shukeri bin Md Salleh.
+
+</div>
